@@ -10,5 +10,3 @@ if __name__ == "__main__":
         row["id"], row["puzzle_type"], list(row["solution_state"].split(";")),
         list(row["initial_state"].split(";")), row["num_wildcards"]
     )
-
-
