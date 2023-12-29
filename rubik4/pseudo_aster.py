@@ -27,37 +27,14 @@ for k in allowed_moves.keys():
 action_list[1] = [
     ["d0"], ["-d0"],
 ]
-action_list[1].append(["r1", "d0", "-r1"])
-action_list[1].append(["r1", "d0", "d0", "-r1"])
-action_list[1].append(["r1", "-d0", "-r1"])
-
-action_list[1].append(["-r1", "d0", "r1"])
-action_list[1].append(["-r1", "d0", "d0", "r1"])
-action_list[1].append(["-r1", "-d0", "r1"])
-
-action_list[1].append(["r2", "d0", "-r2"])
-action_list[1].append(["r2", "d0", "d0", "-r2"])
-action_list[1].append(["r2", "-d0", "-r2"])
-
-action_list[1].append(["r2", "d0", "-r2"])
-action_list[1].append(["-r2", "d0", "d0", "r2"])
-action_list[1].append(["-r2", "-d0", "r2"])
-
-action_list[1].append(["f1", "d0", "-f1"])
-action_list[1].append(["f1", "d0", "d0", "-f1"])
-action_list[1].append(["f1", "-d0", "-f1"])
-
-action_list[1].append(["-f1", "d0", "f1"])
-action_list[1].append(["-f1", "d0", "d0", "f1"])
-action_list[1].append(["-f1", "-d0", "f1"])
-
-action_list[1].append(["f2", "d0", "-f2"])
-action_list[1].append(["f2", "d0", "d0", "-f2"])
-action_list[1].append(["f2", "-d0", "-f2"])
-
-action_list[1].append(["-f2", "d0", "f2"])
-action_list[1].append(["-f2", "d0", "d0", "f2"])
-action_list[1].append(["-f2", "-d0", "f2"])
+for b in ["r1", "r2", "f1", "f2"]:
+    _b = "-" + b
+    action_list[1].append([b, "d0", _b])
+    action_list[1].append([b, "d0", "d0", _b])
+    action_list[1].append([b, "-d0", _b])
+    action_list[1].append([_b, "d0", b])
+    action_list[1].append([_b, "d0", "d0", b])
+    action_list[1].append([_b, "-d0", b])
 
 
 def heuristic(x, y, stage):
@@ -93,7 +70,7 @@ def a_star_search(initial_state, goal_state, stage):
                 move = allowed_moves[move_name]
                 new_state = move(new_state)
             if tuple(new_state) not in closed_set:
-                priority = len(path) + 1 + heuristic(new_state, goal_state, stage)
+                priority = len(path) + len(action) + heuristic(new_state, goal_state, stage)
                 heappush(open_set, (priority, new_state, path + action))
 
 
