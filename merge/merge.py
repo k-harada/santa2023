@@ -2,7 +2,7 @@ import pandas as pd
 
 
 new_list = [
-    "../output/solve_3x3_kociemba_1227.csv",
+    "../output/solve_3x3_kociemba_1229.csv",
     "../output/solve_2x2_pseudo_astar_1227.csv",
 ]
 
@@ -26,5 +26,5 @@ for file in new_list:
 if __name__ == "__main__":
     print(sum(length_list))
     pd.DataFrame({"id": sample_df["id"], "moves": res}).to_csv(
-        "../submissions/sub_1227_2.csv", index=False
+        "../submissions/sub_1229_1.csv", index=False
     )

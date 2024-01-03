@@ -12,7 +12,8 @@ class Puzzle:
 
     def __init__(
             self, puzzle_id: int, puzzle_type: str,
-            solution_state: List[str], initial_state: List[str], num_wildcards: int
+            solution_state: List[str], initial_state: List[str], num_wildcards: int,
+            handmade_type: bool = False
     ):
 
         self.puzzle_id: int = puzzle_id
@@ -21,8 +22,11 @@ class Puzzle:
         self.initial_state: List[str] = initial_state
         self.num_wildcards: int = num_wildcards
         self.state = initial_state.copy()
-        allowed_moves = literal_eval(puzzle_info_df.loc[self.puzzle_type, 'allowed_moves'])
-        self.allowed_moves: Dict[str, Permutation] = {k: Permutation(v) for k, v in allowed_moves.items()}
+        if handmade_type:
+            self.allowed_moves: Dict[str, Permutation] = dict()
+        else:
+            allowed_moves = literal_eval(puzzle_info_df.loc[self.puzzle_type, 'allowed_moves'])
+            self.allowed_moves: Dict[str, Permutation] = {k: Permutation(v) for k, v in allowed_moves.items()}
         self.move_history = []
 
     def __str__(self):
