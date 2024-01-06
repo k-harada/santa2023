@@ -14,7 +14,8 @@ if __name__ == "__main__":
         _goal_state_all = list(_row["solution_state"].split(";"))
         _initial_state_all = list(_row["initial_state"].split(";"))
         print(f"start _i = {_i}")
-        print(_goal_state_all, _initial_state_all)
+        print("initial_state:", _initial_state_all)
+        print("goal_state:", _goal_state_all)
         _sol_all = []
 
         for _j in range((_y + 1) // 2):
@@ -26,30 +27,14 @@ if __name__ == "__main__":
             else:
                 _initial_state = _initial_state_all[:2 * _n] + _initial_state_all[-2 * _n:]
                 _goal_state = _goal_state_all[:2 * _n] + _goal_state_all[-2 * _n:]
-            print(_j, _initial_state, _goal_state)
+            print("sub problem:", _j)
+            print("initial_state:", _initial_state)
+            print("goal_state:", _goal_state)
 
             _sol = solve_1xn(_initial_state, _goal_state)
             for _m in _sol:
                 if _m[0] == "f":
-                    _q = int(_m[1:])
-                    if _q == _n:
-                        _sol_all.append(f"f{_n}")
-                    elif _q < _n:
-                        for _ in range(_n - _q):
-                            _sol_all.append(f"-r{_j}")
-                            _sol_all.append(f"-r{_y - _j}")
-                        _sol_all.append(f"f{_n}")
-                        for _ in range(_n - _q):
-                            _sol_all.append(f"r{_j}")
-                            _sol_all.append(f"r{_y - _j}")
-                    else:
-                        for _ in range(_q - _n):
-                            _sol_all.append(f"r{_j}")
-                            _sol_all.append(f"r{_y - _j}")
-                        _sol_all.append(f"f{_n}")
-                        for _ in range(_q - _n):
-                            _sol_all.append(f"-r{_j}")
-                            _sol_all.append(f"-r{_y - _j}")
+                    _sol_all.append(_m)
                 elif _m == "r0":
                     _sol_all.append(f"r{_j}")
                 elif _m == "-r0":
@@ -59,8 +44,17 @@ if __name__ == "__main__":
                 elif _m == "-r1":
                     _sol_all.append(f"-r{_y - _j}")
 
-            if _sol_all.count(f"f{_n}") % 2 == 1 and _j < (_y + 1) // 2 - 1:
-                _sol_all.append(f"f{_n}")
+            for _q in [_n] + list(range(2 * _n)):
+                if _sol_all.count(f"f{_q}") % 2 == 1:
+                    for _ in range(_n):
+                        _sol_all.append(f"r{_j}")
+                    _sol_all.append(f"f{_q}")
+                    for _ in range(_n):
+                        _sol_all.append(f"r{_j}")
+                    _sol_all.append(f"f{_q}")
+                    for _ in range(_n):
+                        _sol_all.append(f"r{_j}")
+                    _sol_all.append(f"f{_q}")
 
         # check
         _p = Puzzle(

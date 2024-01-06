@@ -5,7 +5,7 @@ from sympy.combinatorics import Permutation
 from heapq import heappop, heappush
 from puzzle import Puzzle
 
-from solve_last import solve_greed
+from solve_greed import solve_greed
 
 
 def heuristic_0(x: List[str], done_list: List[List[str]]):
@@ -207,9 +207,9 @@ def solve_last(state: List[str], goal_state: List[str], done_list: List[List[str
     x5 = goal_state[2 * n - 1]
     x6 = goal_state[3 * n - 1]
     x7 = goal_state[4 * n - 2]
-    print(x)
-    print(done_list)
-    print(x4, x5, x6, x7)
+    # print(x)
+    # print(done_list)
+    # print(x4, x5, x6, x7)
 
     res_up = [-1] * (2 * n)
     res_down = [-1] * (2 * n)
@@ -281,8 +281,8 @@ def solve_last(state: List[str], goal_state: List[str], done_list: List[List[str
                 res_down[i] = 7
             else:
                 res_down[i] = 8
-    print(res_up)
-    print(res_down)
+    # print(res_up)
+    # print(res_down)
     length_list = [0] * (max(res_up + res_down) + 1)
     for c in res_up + res_down:
         length_list[c] += 1
@@ -318,15 +318,15 @@ def solve_last(state: List[str], goal_state: List[str], done_list: List[List[str
         if c != s or c >= 4:
             s = c
             initial_state[1].append(c)
-    print(initial_state)
-    print(goal_state)
-    print(length_list)
-    print(r_0, r_1)
+    # print(initial_state)
+    # print(goal_state)
+    # print(length_list)
+    # print(r_0, r_1)
     state, sol_add = solve_greed(initial_state, goal_state, length_list, r_0, r_1)
     return state, sol_add
 
 
-def solve_1xn(initial_state: List[str], goal_state: List[str]):
+def solve_1xn(initial_state: List[str], goal_state: List[str], any_flip: bool = False):
     n = len(initial_state) // 4
     allowed_moves_mod: Dict[str, Permutation] = dict()
     allowed_moves_mod["r0"] = Permutation(list(range(1, 2 * n)) + [0] + list(range(2 * n, 4 * n)))
@@ -343,7 +343,14 @@ def solve_1xn(initial_state: List[str], goal_state: List[str]):
 
     sol = []
     # print(allowed_moves_mod)
-    for i in [n, 0, n + 1, 1, 2 * n - 1, n - 1, -1]:
+    i_list_2 = [(min(i % n, -i % n), i) for i in range(2 * n)]
+    i_list = [_ii[1] for _ii in list(sorted(i_list_2))]
+    if any_flip:
+        i_list = [-1] + i_list
+    else:
+        i_list = i_list + [-1]
+
+    for i in i_list:
         done_list = [[goal_state[0]], [goal_state[n]], [goal_state[2 * n]], [goal_state[3 * n]]]
         state = initial_state.copy()
         sol = []
@@ -359,7 +366,7 @@ def solve_1xn(initial_state: List[str], goal_state: List[str]):
                 sol = sol + sol_add
                 done_list[j].append(goal_state[n * j + k + 1])
                 # print(k, j, done_list)
-        print(state)
+        # print(state)
         assert heuristic_0(state, done_list) == 0
         state, sol_add = solve_last(state, goal_state, done_list)
         if sol_add is not None:
@@ -370,26 +377,3 @@ def solve_1xn(initial_state: List[str], goal_state: List[str]):
             print(f"Failed at center {i}")
 
     return sol
-
-
-if __name__ == "__main__":
-    # 1x8でテスト（一応全部解ける）
-    puzzles_df = pd.read_csv('../input/puzzles.csv')
-    puzzles_df_1xn = puzzles_df[puzzles_df["puzzle_type"] == "globe_1/8"]
-
-    for _i, _row in puzzles_df_1xn.iterrows():
-        _goal_state = list(_row["solution_state"].split(";"))
-        _initial_state = list(_row["initial_state"].split(";"))
-
-        _p = Puzzle(
-            _row["id"], _row["puzzle_type"], list(_row["solution_state"].split(";")),
-            list(_row["initial_state"].split(";")), _row["num_wildcards"]
-        )
-        print(_i)
-        _sol = solve_1xn(_initial_state, _goal_state, False)
-
-        for _m in _sol:
-            _p.operate(_m)
-        print(_p.state)
-        print(_p.move_history)
-        print(len(_p.move_history))

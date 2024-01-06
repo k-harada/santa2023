@@ -28,36 +28,35 @@ def solve_greed(
     n = sum([length_list[p] for p in initial_state[0]]) // 2
 
     open_set = []
-    # right-right
-    heappush(open_set, (0, initial_state, ["r0"] * r_0 + ["r1"] * r_1))
-    # left-right
-    new_state = [[initial_state[0][-1]] + initial_state[0][:-1], initial_state[1]]
-    c = length_list[initial_state[0][-1]]
-    if c > r_0:
-        heappush(open_set, (0, new_state, ["-r0"] * (c - r_0) + ["r1"] * r_1))
-    else:
-        heappush(open_set, (0, new_state, ["r0"] * (r_0 - c) + ["r1"] * r_1))
-    # right-left
-    new_state = [initial_state[0], [initial_state[1][-1]] + initial_state[1][:-1]]
-    c = length_list[initial_state[1][-1]]
-    if c > r_1:
-        heappush(open_set, (0, new_state, ["-r1"] * (c - r_1) + ["r0"] * r_0))
-    else:
-        heappush(open_set, (0, new_state, ["r1"] * (r_1 - c) + ["r0"] * r_0))
-    # left-left
-    new_state = [[initial_state[0][-1]] + initial_state[0][:-1], [initial_state[1][-1]] + initial_state[1][:-1]]
     c_0 = length_list[initial_state[0][-1]]
     c_1 = length_list[initial_state[1][-1]]
+    # right-right
+    heappush(open_set, (r_0 + r_1, initial_state, ["r0"] * r_0 + ["r1"] * r_1))
+    # left-right
+    new_state = [[initial_state[0][-1]] + initial_state[0][:-1], initial_state[1]]
+    if c_0 > r_0:
+        heappush(open_set, ((c_0 - r_0) + r_1, new_state, ["-r0"] * (c_0 - r_0) + ["r1"] * r_1))
+    else:
+        heappush(open_set, ((r_0 - c_0) + r_1, new_state, ["r0"] * (r_0 - c_0) + ["r1"] * r_1))
+    # right-left
+    new_state = [initial_state[0], [initial_state[1][-1]] + initial_state[1][:-1]]
+    if c_1 > r_1:
+        heappush(open_set, ((c_1 - r_1) + r_0, new_state, ["-r1"] * (c_1 - r_1) + ["r0"] * r_0))
+    else:
+        heappush(open_set, ((r_1 - c_1) + r_0, new_state, ["r1"] * (r_1 - c_1) + ["r0"] * r_0))
+    # left-left
+    new_state = [[initial_state[0][-1]] + initial_state[0][:-1], [initial_state[1][-1]] + initial_state[1][:-1]]
+
     if c_0 > r_0:
         if c_1 > r_1:
-            heappush(open_set, (0, new_state, ["-r0"] * (c_0 - r_0) + ["-r1"] * (c_1 - r_1)))
+            heappush(open_set, (abs(c_0 - r_0) + abs(c_1 - r_1), new_state, ["-r0"] * (c_0 - r_0) + ["-r1"] * (c_1 - r_1)))
         else:
-            heappush(open_set, (0, new_state, ["-r0"] * (c_0 - r_0) + ["r1"] * (r_1 - c_1)))
+            heappush(open_set, (abs(c_0 - r_0) + abs(c_1 - r_1), new_state, ["-r0"] * (c_0 - r_0) + ["r1"] * (r_1 - c_1)))
     else:
         if c_1 > r_1:
-            heappush(open_set, (0, new_state, ["r0"] * (r_0 - c_0) + ["-r1"] * (c_1 - r_1)))
+            heappush(open_set, (abs(c_0 - r_0) + abs(c_1 - r_1), new_state, ["r0"] * (r_0 - c_0) + ["-r1"] * (c_1 - r_1)))
         else:
-            heappush(open_set, (0, new_state, ["r0"] * (r_0 - c_0) + ["r1"] * (r_1 - c_1)))
+            heappush(open_set, (abs(c_0 - r_0) + abs(c_1 - r_1), new_state, ["r0"] * (r_0 - c_0) + ["r1"] * (r_1 - c_1)))
 
     closed_set = set()
 
