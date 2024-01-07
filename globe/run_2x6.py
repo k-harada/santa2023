@@ -2,6 +2,7 @@ import pandas as pd
 from solve_1xn_center import solve_1xn
 from puzzle import Puzzle
 from solve_trivial import solve_trivial
+import datetime
 
 
 if __name__ == "__main__":
@@ -10,6 +11,8 @@ if __name__ == "__main__":
     puzzles_df_1xn = puzzles_df[puzzles_df["puzzle_type"] == "globe_2/6"]
     _id_list = []
     _moves_list = []
+    dt_now = datetime.datetime.now()
+    # print(dt_now.strftime('%Y-%m-%d %H:%M'))
     for _i, _row in puzzles_df_1xn.iterrows():
         _goal_state = list(_row["solution_state"].split(";"))
         _initial_state = list(_row["initial_state"].split(";"))
@@ -23,8 +26,11 @@ if __name__ == "__main__":
         _goal_state_sub = _goal_state[:12] + _goal_state[-12:]
         print(_initial_state_sub)
         print(_goal_state_sub)
-        _sol = solve_1xn(_initial_state_sub, _goal_state_sub, True)
-
+        seed = 0
+        _sol = solve_1xn(_initial_state_sub, _goal_state_sub, seed=seed)
+        while _sol is None:
+            seed += 1
+            _sol = solve_1xn(_initial_state_sub, _goal_state_sub, seed=seed)
         for _m in _sol:
             if _m == "r1":
                 _p.operate("r2")
@@ -43,4 +49,6 @@ if __name__ == "__main__":
         print(len(_p.move_history))
         _id_list.append(_i)
         _moves_list.append(".".join(_p.move_history))
-    pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv("../output/globe_2x6_harada0106.csv", index=False)
+    pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv(
+        f"../output/globe_2x6_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
+    )

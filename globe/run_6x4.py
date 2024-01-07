@@ -2,11 +2,12 @@ import pandas as pd
 from puzzle import Puzzle
 import datetime
 from solve_1xn_center import solve_1xn
+from solve_trivial import solve_trivial
 
 
 if __name__ == "__main__":
     puzzles_df = pd.read_csv('../input/puzzles.csv')
-    _y = 3
+    _y = 6
     _n = 4
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_y}/{_n}"]
     dt_now = datetime.datetime.now()
@@ -63,6 +64,15 @@ if __name__ == "__main__":
                     for _ in range(_n):
                         _sol_all.append(f"r{_j}")
                     _sol_all.append(f"f{_q}")
+        if _y % 2 == 0:
+            _yy = _y // 2
+            _mm = _yy * _n * 2
+            _sol_add = solve_trivial(_initial_state_all[_mm:-_mm], _goal_state_all[_mm:-_mm])
+            for _m in _sol_add:
+                if _m == "r0":
+                    _sol_all.append(f"r{_yy}")
+                elif _m == "-r0":
+                    _sol_all.append(f"-r{_yy}")
 
         # check
         _p = Puzzle(
@@ -79,5 +89,5 @@ if __name__ == "__main__":
         _moves_list.append(".".join(_p.move_history))
 
     pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv(
-        f"../output/globe_3x4_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
+        f"../output/globe_{_y}x{_n}_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
     )

@@ -67,7 +67,12 @@ def solve_greed(
         if current_state == goal_state:
             return current_state, path
 
+        if tuple(current_state[0] + current_state[1]) in closed_set:
+            continue
+
         closed_set.add(tuple(current_state[0] + current_state[1]))
+        # if np.random.uniform() < 0.00001:
+        #     print(len(closed_set))
 
         # r0
         new_state = current_state.copy()
@@ -127,24 +132,16 @@ def solve_greed(
 
 
 if __name__ == "__main__":
-    # 解けないケースを探す
-    _initial_state = [[0, 1, 2, 5, 3, 4], [6, 7, 8, 9, 10, 11]]
-    _solution_state = [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 10, 11]]
-    print(_initial_state)
-
-    _state, _sol = solve_greed(_initial_state, _solution_state)
-    print(_state)
-    print(_sol)
 
     # fake problems
-    _solution_state = [[0, 1, 2, 3, 3], [4, 5, 6, 7, 7]]
-    _xx = np.array([0, 1, 2, 3, 3, 4, 5, 6, 7, 7])
-    _n = 7
-    _length_list = [_n, 1, _n - 1, 1, _n, 1, _n - 1, 1, 1]
+    _solution_state = [[0, 1, 1, 2, 3, 3], [4, 5, 5, 6, 7, 7]]
+    _xx = np.array([0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 7, 7])
+    _n = 14
+    _length_list = [_n, 1, _n, 1, _n, 1, _n, 1]
     while True:
         np.random.shuffle(_xx)
-        _initial_state = [list(_xx[:4]), list(_xx[4:])]
-        if sum([_length_list[a] for a in _xx[:4]]) == 2 * _n + 2:
+        _initial_state = [list(_xx[:6]), list(_xx[6:])]
+        if sum([_length_list[a] for a in _xx[:6]]) == 2 * _n + 4:
             break
     print(_initial_state)
 

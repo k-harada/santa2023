@@ -1,12 +1,15 @@
 import pandas as pd
-
+import datetime
 
 new_list = [
-    "../output/solve_3x3_kociemba_1229.csv",
-    "../output/solve_2x2_pseudo_astar_1227.csv",
+    "../output/globe_2x6_2024-01-08-01:35.csv",
+    "../output/globe_3x4_2024-01-08-01:47.csv",
+    "../output/globe_6x4_2024-01-08-01:59.csv",
+    "../output/globe_6x8_2024-01-08-02:03.csv",
+    "../output/globe_6x10_2024-01-08-02:18.csv",
 ]
 
-sample_df = pd.read_csv("../input/sample_submission.csv")
+sample_df = pd.read_csv("../output/submission_719501.csv")
 length_list = [0] * sample_df.shape[0]
 res = []
 
@@ -25,6 +28,7 @@ for file in new_list:
 
 if __name__ == "__main__":
     print(sum(length_list))
+    dt_now = datetime.datetime.now()
     pd.DataFrame({"id": sample_df["id"], "moves": res}).to_csv(
-        "../submissions/sub_1229_1.csv", index=False
+        f"../submissions/sub_harada_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
     )
