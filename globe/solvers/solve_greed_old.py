@@ -133,18 +133,114 @@ def solve_greed(
 
 if __name__ == "__main__":
 
-    # fake problems
-    _solution_state = [[0, 1, 1, 2, 3, 3], [4, 5, 5, 6, 7, 7]]
-    _xx = np.array([0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 7, 7])
-    _n = 14
-    _length_list = [_n, 1, _n, 1, _n, 1, _n, 1]
-    while True:
-        np.random.shuffle(_xx)
-        _initial_state = [list(_xx[:6]), list(_xx[6:])]
-        if sum([_length_list[a] for a in _xx[:6]]) == 2 * _n + 4:
-            break
-    print(_initial_state)
-
-    _state, _sol = solve_greed(_initial_state, _solution_state, _length_list, 0, 0)
+    _state, _sol = solve_greed(
+        [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 11, 10]],
+        [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9, 10, 11]],
+    )
     print(_state)
     print(_sol)
+
+    _p = Puzzle(9999, "globe_3/33",
+                [str(_i) for _i in range(66*4)],
+                [str(_i) for _i in range(66*4)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f33")
+        elif _m == "r1":
+            _p.operate("r3")
+        elif _m == "-r1":
+            _p.operate("-r3")
+        else:
+            _p.operate(_m)
+    print("f33", _p)
+    print("f33", [str(_i) for _i in range(66*4)])
+
+    _p = Puzzle(9999, "globe_1/8",
+                [str(_i) for _i in range(32)],
+                [str(_i) for _i in range(32)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f8")
+        else:
+            _p.operate(_m)
+    print("f8", _p)
+
+    _p = Puzzle(9999, "globe_1/8",
+                [str(_i) for _i in range(32)],
+                [str(_i) for _i in range(32)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f2")
+        else:
+            _p.operate(_m)
+    print("f2", _p)
+
+    _p = Puzzle(9999, "globe_1/8",
+                [str(_i) for _i in range(32)],
+                [str(_i) for _i in range(32)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f0")
+        else:
+            _p.operate(_m)
+    print("f0", _p)
+
+    _p = Puzzle(9999, "globe_1/8",
+                [str(_i) for _i in range(32)],
+                [str(_i) for _i in range(32)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f4")
+        else:
+            _p.operate(_m)
+    print("f4", _p)
+
+    _p = Puzzle(9999, "globe_1/16",
+                [str(_i) for _i in range(64)],
+                [str(_i) for _i in range(64)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f16")
+        else:
+            _p.operate(_m)
+    print(_p)
+    _p = Puzzle(9999, "globe_1/16",
+                [str(_i) for _i in range(64)],
+                [str(_i) for _i in range(64)], 0
+                )
+    for _m in _sol:
+        if _m == "f2":
+            _p.operate("f2")
+        else:
+            _p.operate(_m)
+    print(_p)
+
+    _state, _sol = solve_greed(
+        [[0, 1, 2, 7], [4, 5, 6, 3]],
+        [[0, 1, 2, 3], [4, 5, 6, 7]]
+    )
+    print(_state)
+    print(_sol)
+
+    for _ in range(10):
+        # fake problems
+        _solution_state = [[0, 1, 2, 3], [4, 5, 6, 7]]
+        _xx = np.array([0, 1, 2, 3, 4, 5, 6, 7])
+        _n = 1
+        _length_list = [_n, 1, _n, 1, _n, 1, _n, 1]
+        while True:
+            np.random.shuffle(_xx)
+            _initial_state = [list(_xx[:4]), list(_xx[4:])]
+            if sum([_length_list[a] for a in _xx[:4]]) == 4:
+                break
+        print(_initial_state)
+
+        _state, _sol = solve_greed(_initial_state, _solution_state, _length_list, 0, 0)
+        print(_state)
+        print(_sol)

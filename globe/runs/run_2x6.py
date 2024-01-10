@@ -1,13 +1,13 @@
 import pandas as pd
-from solve_1xn_center import solve_1xn
+from globe.solvers.solve_1xn_center import solve_1xn
 from puzzle import Puzzle
-from solve_trivial import solve_trivial
+from globe.solvers.solve_trivial import solve_trivial
 import datetime
 
 
 if __name__ == "__main__":
     # 2x6を実行
-    puzzles_df = pd.read_csv('../input/puzzles.csv')
+    puzzles_df = pd.read_csv('../../input/puzzles.csv')
     puzzles_df_1xn = puzzles_df[puzzles_df["puzzle_type"] == "globe_2/6"]
     _id_list = []
     _moves_list = []

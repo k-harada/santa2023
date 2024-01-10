@@ -6,7 +6,7 @@ from solve_trivial import solve_trivial
 
 
 if __name__ == "__main__":
-    puzzles_df = pd.read_csv('../input/puzzles.csv')
+    puzzles_df = pd.read_csv('../../input/puzzles.csv')
     _y = 6
     _n = 4
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_y}/{_n}"]

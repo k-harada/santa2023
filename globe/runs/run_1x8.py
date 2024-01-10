@@ -1,6 +1,5 @@
-import numpy as np
 import pandas as pd
-from solve_1xn_center import solve_1xn
+from globe.solvers.solve_1xn_center import solve_1xn
 from puzzle import Puzzle
 import datetime
 
@@ -21,11 +20,18 @@ if __name__ == "__main__":
             list(_row["initial_state"].split(";")), _row["num_wildcards"]
         )
         print(_i)
-        seed = 0
-        _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, 8], seed=seed)
+        seed = 71
+        _sol = solve_1xn(_initial_state, _goal_state, seed=seed)
         while _sol is None:
             seed += 1
-            _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, 8], seed=seed)
+            _sol = solve_1xn(_initial_state, _goal_state, seed=seed)
+            if seed == 75:
+                break
+        while _sol is None:
+            seed += 1
+            _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, 4], seed=seed)
+            if seed == 80:
+                break
 
         for _m in _sol:
             _p.operate(_m)
@@ -34,4 +40,6 @@ if __name__ == "__main__":
         print(len(_p.move_history))
         _id_list.append(_i)
         _moves_list.append(".".join(_p.move_history))
-    # pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv(f"../output/globe_1x8_0107_seed{seed}.csv", index=False)
+    pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv(
+        f"../../output/globe_1x8__{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
+    )

@@ -3,7 +3,7 @@ from sympy.combinatorics import Permutation
 from heapq import heappop, heappush
 import numpy as np
 
-from solve_greed import solve_greed
+from .solve_greed_old import solve_greed
 
 
 def heuristic_0(x: List[str], done_list: List[List[str]]):
@@ -119,10 +119,109 @@ def heuristic(
     return 1
 
 
+def heuristic_old(
+        x: List[str], y: List[str], done_list: List[List[str]],
+        base_index: int = 0, add: str = "", center_list: List[int] = -1
+):
+    h0 = heuristic_0(x, done_list)
+    n = len(x) // 4
+    if add == "":
+        return h0
+    if h0 > 0:
+        return h0 * 1000
+    # find index for base
+    base_list = done_list[base_index]
+    string_upper = "_".join(["."] + x[:2 * n] + x[:2 * n] + ["."])
+    string_lower = "_".join(["."] + x[2 * n:] + x[2 * n:] + ["."])
+    x_joint = "_" + "_".join(base_list) + "_"
+    x_joint_add = x_joint + add + "_"
+
+    if base_index in [0, 1]:
+        if string_upper.find(x_joint_add) >= 0 or string_lower.find("".join(list(reversed(x_joint_add)))) >= 0:
+            return 0
+    else:
+        if string_lower.find(x_joint_add) >= 0 or string_upper.find("".join(list(reversed(x_joint_add)))) >= 0:
+            return 0
+
+    if base_index in [0, 1]:
+        s_up = string_upper.find(x_joint)
+        if s_up >= 0:
+            start_ind = string_upper[:s_up].count("_")
+            x_ = x.copy()
+        else:
+            x_ = list(reversed(x[2 * n:])) + list(reversed(x[:2 * n]))
+            string_upper = "_".join(["."] + x_[:2 * n] + x_[:2 * n] + ["."])
+            s_up = string_upper.find(x_joint)
+            assert s_up >= 0
+            start_ind = string_upper[:s_up].count("_")
+    else:
+        s_low = string_lower.find(x_joint)
+        if s_low >= 0:
+            start_ind = string_lower[:s_low].count("_")
+            x_ = x[2 * n:] + x[:2 * n]
+        else:
+            x_ = list(reversed(x[:2 * n])) + list(reversed(x[2 * n:]))
+            string_upper = "_".join(["."] + x_[:2 * n] + x_[:2 * n] + ["."])
+            s_low = string_upper.find(x_joint)
+            assert s_low >= 0
+            start_ind = string_upper[:s_low].count("_")
+
+    res = 10000000
+    used = [0] * (4 * n)
+    if start_ind < 2 * n:
+        for i in range(start_ind, start_ind + len(base_list)):
+            used[i % (2 * n)] = 1
+    else:
+        for i in range(start_ind, start_ind + len(base_list)):
+            used[i % (2 * n) + 2 * n] = 1
+    for i_add in range(4 * n):
+        if x_[i_add] == add and used[i_add] == 0:
+            res = min(res, heuristic_core(n, start_ind, len(base_list), i_add))
+    # print(x[:n])
+    # print(x[n:2 * n])
+    # print(x[2 * n:3 * n])
+    # print(x[3 * n:4 * n])
+    # print(x_[:n])
+    # print(x_[n:2 * n])
+    # print(x_[2 * n:3 * n])
+    # print(x_[3 * n:4 * n])
+    # print(done_list[base_index], base_index, add, start_ind, res)
+    return res
+
+
+def heuristic_core(n, start_ind, length, i_add):
+    last_ind = (start_ind + length - 1) % (2 * n)
+    # 右端に持ってくる手数
+    res = (2 * n - last_ind - 1) % n
+    # 同じ行にある場合のペナルティ
+    if i_add // n == last_ind // n:
+        if i_add < last_ind:
+            # 一旦左に持っていく
+            res_a = n + 2 * (i_add % n) + 2 + 2
+            # 右に持っていく
+            res_b = length * 2 + (start_ind - i_add) + 1 + 2
+            res += min(res_a, res_b)
+        else:
+            # 2回反転
+            res += 2
+    # 隣の行にある場合
+    elif i_add // (2 * n) == last_ind // (2 * n):
+        # 左端に持っていくまでの手数
+        res += (i_add % n) + 2
+    # 反対の輪
+    else:
+        if last_ind % (2 * n) >= n:
+            res += abs(i_add % (2 * n) - (n - 1)) + 1
+        else:
+            res += min(2 * n - 1 - (i_add % (2 * n)), (i_add % (2 * n)) + 1) + 1
+    # print(i_add, res)
+    return res
+
+
 def add_one(
         initial_state: List[str], goal_state: List[str], allowed_moves,
         done_list: List[List[str]], base_index: int = 0, add: str = "",
-        center_list: Optional[List[int]] = None
+        center_list: Optional[List[int]] = None, use_heuristic: bool = False
 ):
     n = len(initial_state) // 4
     assert len(initial_state) % 4 == 0
@@ -134,9 +233,15 @@ def add_one(
 
     while len(open_set):
 
+        # timeout
+        if len(closed_set) >= 1000000:
+            return None, None
+
         _, current_state, path = heappop(open_set)
         h = heuristic(current_state, goal_state, done_list, base_index, add, center_list)
         if h == 0:
+            print(len(closed_set))
+            print(path)
             # print(current_state, path)
             return current_state, path
         # print(done_list)
@@ -148,43 +253,6 @@ def add_one(
             continue
         closed_set.add(tuple(current_state))
 
-        """
-        action_list = []
-        new_state = current_state.copy()
-        new_state = allowed_moves[f"f{n}"](new_state)
-        if heuristic_0(new_state, done_list) == 0:
-            action_list.append([f"f{n}"])
-
-        for i in range(1, n + 1):
-            new_state = current_state.copy()
-            new_state = (allowed_moves["r0"] ** i)(new_state)
-            if heuristic_0(allowed_moves[f"f{n}"](new_state), done_list) == 0:
-                action_list.append(["r0"] * i)
-                break
-        for i in range(1, n + 1):
-            new_state = current_state.copy()
-            new_state = (allowed_moves["r1"] ** i)(new_state)
-            if heuristic_0(allowed_moves[f"f{n}"](new_state), done_list) == 0:
-                action_list.append(["r1"] * i)
-                break
-        for i in range(1, n + 1):
-            new_state = current_state.copy()
-            new_state = (allowed_moves["-r0"] ** i)(new_state)
-            if heuristic_0(allowed_moves[f"f{n}"](new_state), done_list) == 0:
-                action_list.append(["-r0"] * i)
-                break
-        for i in range(1, n + 1):
-            new_state = current_state.copy()
-            new_state = (allowed_moves["-r1"] ** i)(new_state)
-            if heuristic_0(allowed_moves[f"f{n}"](new_state), done_list) == 0:
-                action_list.append(["-r1"] * i)
-                break
-        # print(action_list)
-        # print(current_state, done_list, path)
-        # print(len(open_set))
-        # if len(action_list) == 0:
-        #     action_list = [["r0"], ["-r0"], ["r1"], ["-r1"]]
-        """
         if center_list is None:
             action_list = [[k] for k in allowed_moves.keys()]
         else:
@@ -196,7 +264,11 @@ def add_one(
                 new_state = move(new_state)
 
             if tuple(new_state) not in closed_set:
-                h_new = heuristic(new_state, goal_state, done_list, base_index, add, center_list)
+                if use_heuristic:
+                    h_new = heuristic_old(new_state, goal_state, done_list, base_index, add, center_list)
+                    # print(h_new, new_state)
+                else:
+                    h_new = 0
                 priority = len(path) + len(action) + h_new
                 heappush(open_set, (priority, new_state, path + action))
 
@@ -378,7 +450,8 @@ def solve_last(state: List[str], goal_state: List[str], done_list: List[List[str
 
 
 def solve_1xn(
-        initial_state: List[str], goal_state: List[str], center_list: Optional[List[int]] = None, seed: int = 42
+        initial_state: List[str], goal_state: List[str], center_list: Optional[List[int]] = None,
+        seed: int = 42, do_bfs: bool = True, use_heuristic: bool = False
 ):
     np.random.seed(seed)
     n = len(initial_state) // 4
@@ -409,11 +482,26 @@ def solve_1xn(
     j_count = [0, 0, 0, 0]
     for j in j_list[:-1]:
         k = j_count[j]
-        state, sol_add = add_one(
-            state, goal_state, allowed_moves_mod, done_list,
-            base_index=j, add=goal_state[n * j + k + 1],
-            center_list=center_list
-        )
+        sol_add = None
+        if do_bfs:
+            _state, sol_add = add_one(
+                state, goal_state, allowed_moves_mod, done_list,
+                base_index=j, add=goal_state[n * j + k + 1],
+                center_list=center_list,
+                use_heuristic=False
+            )
+        if use_heuristic and sol_add is None:
+            _state, sol_add = add_one(
+                state, goal_state, allowed_moves_mod, done_list,
+                base_index=j, add=goal_state[n * j + k + 1],
+                center_list=center_list,
+                use_heuristic=True
+            )
+
+        if sol_add is None:
+            print(f"Failed at center_list {center_list}")
+            return None
+        state = _state
         sol = sol + sol_add
         done_list[j].append(goal_state[n * j + k + 1])
         print(k, j, done_list)

@@ -2,9 +2,10 @@ from sympy.combinatorics import Permutation
 from ast import literal_eval
 from typing import Dict, List
 import pandas as pd
+import os
 
 
-puzzle_info_df = pd.read_csv('../input/puzzle_info.csv', index_col='puzzle_type')
+puzzle_info_df = pd.read_csv(f"{os.path.dirname(__file__)}/input/puzzle_info.csv", index_col='puzzle_type')
 
 
 class Puzzle:

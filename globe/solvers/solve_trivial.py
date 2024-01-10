@@ -1,3 +1,6 @@
+# 2/6とかの真ん中の自明なやつを解くだけのコード
+# 左と右に回して短い方を吐き出す
+
 def solve_trivial(initial_state_sub, goal_state):
     res_plus = 0
     temp = initial_state_sub.copy()
