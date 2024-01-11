@@ -1,9 +1,11 @@
 import pandas as pd
 from puzzle import Puzzle
 import datetime
-from globe.solvers.solve_1xn_swap import SwapSolver
-from globe.solvers.solve_trivial import solve_trivial
+from globe.solvers.swap_1xn import SwapSolver
+from globe.solvers.trivial_center import solve_trivial
 
+# 3125
+# 1873
 
 if __name__ == "__main__":
     puzzles_df = pd.read_csv('../../input/puzzles.csv')
@@ -23,7 +25,7 @@ if __name__ == "__main__":
         print(f"start _i = {_i}")
         print("initial_state:", _initial_state_all)
         print("goal_state:", _goal_state_all)
-        if _goal_state_all[0] != _goal_state_all[1]:
+        if _goal_state_all[0] == _goal_state_all[1]:
             continue
         _sol_all = []
 
@@ -43,18 +45,26 @@ if __name__ == "__main__":
             solver = SwapSolver(_n)
             solver.initialize(_initial_state, _goal_state)
             solver.solve()
+            if solver.path is None:
+                seed = 0
+                while True:
+                    solver.initialize(_initial_state, _goal_state, seed=seed)
+                    seed += 1
+                    solver.solve()
+                    if solver.path is not None:
+                        break
             print(len(solver.path))
 
             _sol = solver.path
 
-            _sol_add = solve_trivial(solver.state[:2 * _n], _goal_state[:2 * _n])
+            _sol_add = solve_trivial(list(solver.state[:2 * _n]), _goal_state[:2 * _n])
             for _m in _sol_add:
                 if _m == "r0":
                     _sol.append("r0")
                 elif _m == "-r0":
                     _sol.append("-r0")
 
-            _sol_add = solve_trivial(solver.state[2 * _n:], _goal_state[2 * _n:])
+            _sol_add = solve_trivial(list(solver.state[2 * _n:]), _goal_state[2 * _n:])
             for _m in _sol_add:
                 if _m == "r0":
                     _sol.append("r1")

@@ -1,7 +1,7 @@
 import pandas as pd
 from puzzle import Puzzle
 import datetime
-from solve_1xn_center import solve_1xn
+from globe.solvers.solve_1xn_greed import GreedySolver
 
 
 if __name__ == "__main__":
@@ -12,6 +12,8 @@ if __name__ == "__main__":
     dt_now = datetime.datetime.now()
     _id_list = []
     _moves_list = []
+
+    solver = GreedySolver(_n)
 
     for _i, _row in puzzles_df_pick.iterrows():
         _goal_state_all = list(_row["solution_state"].split(";"))
@@ -34,11 +36,10 @@ if __name__ == "__main__":
             print("initial_state:", _initial_state)
             print("goal_state:", _goal_state)
 
-            seed = 0
-            _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, _n], seed=seed)
-            while _sol is None:
-                seed += 1
-                _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, _n], seed=seed)
+            solver.initialize(_initial_state, _goal_state, force_pair=False)
+            solver.solve()
+            print(solver.get_length())
+            _sol = solver.get_path()
 
             for _m in _sol:
                 if _m[0] == "f":

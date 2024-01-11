@@ -1,7 +1,7 @@
 import pandas as pd
 from globe.solvers.solve_1xn_center import solve_1xn
 from puzzle import Puzzle
-from globe.solvers.solve_trivial import solve_trivial
+from globe.solvers.trivial_center import solve_trivial
 import datetime
 
 

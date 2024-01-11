@@ -8,8 +8,12 @@ new_list = [
     "../output/globe_6x8_2024-01-08-02:03.csv",
     "../output/globe_6x10_2024-01-08-02:18.csv",
     "../output/globe_1x16_2024-01-10-02:54.csv",
+    "../output/globe_1x16_2024-01-11-16:55.csv",
     "../output/globe_3x33_2024-01-10-02:48.csv",
+    "../output/globe_3x33_2024-01-11-16:58.csv",
+    "../output/globe_3x33_2024-01-11-18:34.csv",
     "../output/globe_8x25_2024-01-10-02:57.csv",
+    "../output/globe_8x25_2024-01-11-16:51.csv",
 ]
 
 sample_df = pd.read_csv("../output/submission_719501.csv")

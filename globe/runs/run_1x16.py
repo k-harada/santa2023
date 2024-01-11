@@ -1,8 +1,8 @@
 import pandas as pd
 from puzzle import Puzzle
 import datetime
-from globe.solvers.solve_1xn_swap import SwapSolver
-from globe.solvers.solve_trivial import solve_trivial
+from globe.solvers.swap_1xn import SwapSolver
+from globe.solvers.trivial_center import solve_trivial
 
 
 if __name__ == "__main__":
@@ -44,14 +44,14 @@ if __name__ == "__main__":
 
             _sol = solver.path
 
-            _sol_add = solve_trivial(solver.state[:2 * _n], _goal_state[:2 * _n])
+            _sol_add = solve_trivial(list(solver.state[:2 * _n]), _goal_state[:2 * _n])
             for _m in _sol_add:
                 if _m == "r0":
                     _sol.append("r0")
                 elif _m == "-r0":
                     _sol.append("-r0")
 
-            _sol_add = solve_trivial(solver.state[2 * _n:], _goal_state[2 * _n:])
+            _sol_add = solve_trivial(list(solver.state[2 * _n:]), _goal_state[2 * _n:])
             for _m in _sol_add:
                 if _m == "r0":
                     _sol.append("r1")
