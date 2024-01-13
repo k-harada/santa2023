@@ -1,5 +1,5 @@
 import pandas as pd
-from globe.solvers.solve_1xn_center import solve_1xn
+from globe.solvers.old.solve_1xn_center import solve_1xn
 from puzzle import Puzzle
 import datetime
 

@@ -5,7 +5,7 @@ from solve_1xn_center import solve_1xn
 
 
 if __name__ == "__main__":
-    puzzles_df = pd.read_csv('../../input/puzzles.csv')
+    puzzles_df = pd.read_csv('../../../input/puzzles.csv')
     _y = 3
     _n = 4
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_y}/{_n}"]

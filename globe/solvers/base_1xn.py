@@ -47,6 +47,11 @@ class BaseSolver:
         self.path = []
         return None
 
+    def reset(self):
+        self.path = []
+        self.state = self.initial_state.copy()
+        return None
+
     @abstractmethod
     def solve(self):
         return None

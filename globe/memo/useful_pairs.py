@@ -1,5 +1,4 @@
-import numpy as np
-from globe.solvers.solve_1xn_greed import GreedySolver
+from globe.solvers.old.solve_1xn_greed import GreedySolver
 from puzzle import Puzzle
 
 
@@ -70,18 +69,25 @@ from puzzle import Puzzle
 # ['f4', '-r0', '-r1', '-r1', 'f4', 'r0', '-r1', 'f4', 'r1', 'r1', 'r1', 'f4']
 
 
+# 解析中
+# いっこ抜いて挿入する魔法を作りたい
+# ['f2', 'r0', 'r1', 'f2', '-r1', 'f3', 'r1', 'f3', 'f2', '-r1', '-r0', 'f2', 'r1', 'f2', '-r1', 'f2']
+
+
 if __name__ == "__main__":
     solver = GreedySolver(4)
     solver.initialize([
-          "0", "1", "2", "3", "4", "5", "6", "7",
-          "8", "9", "A", "B", "C", "D", "E", "F"
+          "0", "1", "2", "3", "7", "4", "5", "6",
+          "8", "9", "A", "B", "F", "C", "D", "E",
         ], [
           "0", "1", "2", "3", "4", "5", "6", "7",
           "8", "9", "A", "B", "C", "D", "E", "F"
         ], force_pair=True
     )
-    solver.solve()
-    print(solver.path)
+    # solver.solve()
+    # print(solver.path)
+
+    # _sol = solver.path
 
     # 大きすぎて無理
     # solver = GreedySolver(6)
@@ -96,9 +102,9 @@ if __name__ == "__main__":
     # solver.solve()
     # print(solver.path)
 
-    k = 0
-    _sol = ['f0', '-r0'] + ['-r1'] * k + ['f1', 'r0', '-r1', 'f1'] + ['r1'] * (k + 1) + ['f0']
-    # 0とkを入れ替える魔法
+    k = 5
+    # _sol = ['f0', '-r0'] + ['-r1'] * k + ['f0', 'r0', '-r1', 'f0'] + ['r1'] * (k + 1) + ['f0']
+    # kと2*n-1, 2*nと4*n-1-kを入れ替える魔法
     # _sol = ['f0', 'r0', '-r1'] + ['-r1'] * k + ['f1', '-r0', 'r1', 'f1'] + ['r1'] * k + ['f0']
     # 0とn-kで上下を入れ替える魔法
 
@@ -106,6 +112,13 @@ if __name__ == "__main__":
     # _sol = ['f0', 'r0', '-r1', 'f0', '-r0']  # 0とnで上下を入れ替える魔法
     # _sol = ['f0', 'r0', '-r1'] + ['f5', '-r0', 'r1', 'f5'] + ['f0']
     # 上下それぞれで互換する魔法
+
+    _sol = ['f0', '-r0'] + ['-r1'] * k + ['f0', 'r0', '-r1', 'f0'] + ['r1'] * (k + 1) + ['f0']
+    # 上下ともに互換する魔法
+    # _sol = [f"f{0}", "-r0"] + [f"f{k}", "r0", "-r1", f"f{k}"] + ["r1"] + [f"f{0}"]
+    # 上下ともに互換する魔法
+    # 'f1' = 'r0', 'r1', 'f0', '-r0', '-r1',
+
 
     _p = Puzzle(9999, "globe_3/33",
                 [str(_i) for _i in range(66*4)],

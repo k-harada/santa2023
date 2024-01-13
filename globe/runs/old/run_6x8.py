@@ -1,20 +1,15 @@
 import pandas as pd
 from puzzle import Puzzle
 import datetime
-from globe.solvers.swap_1xn import SwapSolver
-from globe.solvers.trivial_center import solve_trivial
+from solve_1xn_center import solve_1xn
+from solve_trivial import solve_trivial
 
-# 3125
-# 1873
 
 if __name__ == "__main__":
-    puzzles_df = pd.read_csv('../../input/puzzles.csv')
-    _y = 3
-    _n = 33
-    puzzles_df_pick = pd.concat([
-        puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_y}/{_n}"],
-        puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_n}/{_y}"]
-    ], axis=0)
+    puzzles_df = pd.read_csv('../../../input/puzzles.csv')
+    _y = 6
+    _n = 8
+    puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"globe_{_y}/{_n}"]
     dt_now = datetime.datetime.now()
     _id_list = []
     _moves_list = []
@@ -25,8 +20,6 @@ if __name__ == "__main__":
         print(f"start _i = {_i}")
         print("initial_state:", _initial_state_all)
         print("goal_state:", _goal_state_all)
-        if _goal_state_all[0] == _goal_state_all[1]:
-            continue
         _sol_all = []
 
         for _j in range((_y + 1) // 2):
@@ -42,34 +35,11 @@ if __name__ == "__main__":
             print("initial_state:", _initial_state)
             print("goal_state:", _goal_state)
 
-            solver = SwapSolver(_n)
-            solver.initialize(_initial_state, _goal_state)
-            solver.solve()
-            if solver.path is None:
-                seed = 0
-                while True:
-                    solver.initialize(_initial_state, _goal_state, seed=seed)
-                    seed += 1
-                    solver.solve()
-                    if solver.path is not None:
-                        break
-            print(len(solver.path))
-
-            _sol = solver.path
-
-            _sol_add = solve_trivial(list(solver.state[:2 * _n]), _goal_state[:2 * _n])
-            for _m in _sol_add:
-                if _m == "r0":
-                    _sol.append("r0")
-                elif _m == "-r0":
-                    _sol.append("-r0")
-
-            _sol_add = solve_trivial(list(solver.state[2 * _n:]), _goal_state[2 * _n:])
-            for _m in _sol_add:
-                if _m == "r0":
-                    _sol.append("r1")
-                elif _m == "-r0":
-                    _sol.append("-r1")
+            seed = 0
+            _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, _n], seed=seed)
+            while _sol is None:
+                seed += 1
+                _sol = solve_1xn(_initial_state, _goal_state, center_list=[0, _n], seed=seed)
 
             for _m in _sol:
                 if _m[0] == "f":
@@ -94,6 +64,15 @@ if __name__ == "__main__":
                     for _ in range(_n):
                         _sol_all.append(f"r{_j}")
                     _sol_all.append(f"f{_q}")
+        if _y % 2 == 0:
+            _yy = _y // 2
+            _mm = _yy * _n * 2
+            _sol_add = solve_trivial(_initial_state_all[_mm:-_mm], _goal_state_all[_mm:-_mm])
+            for _m in _sol_add:
+                if _m == "r0":
+                    _sol_all.append(f"r{_yy}")
+                elif _m == "-r0":
+                    _sol_all.append(f"-r{_yy}")
 
         # check
         _p = Puzzle(
@@ -110,5 +89,5 @@ if __name__ == "__main__":
         _moves_list.append(".".join(_p.move_history))
 
     pd.DataFrame({"id": _id_list, "moves": _moves_list}).to_csv(
-        f"../../output/globe_3x33_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
+        f"../output/globe_{_y}x{_n}_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
     )
