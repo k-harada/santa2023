@@ -2,7 +2,9 @@ import pandas as pd
 import datetime
 
 new_list = [
-    "../output/globe_swap_random_search_2024-01-14-00:43.csv"
+    "../output/globe_swap_random_search_2024-01-14-00:43.csv",
+    "../output/wreath100_random_732.csv",
+    "../output/wreath_small_greed.csv",
 ]
 
 sample_df = pd.read_csv("../submissions/submission_431376.csv")
