@@ -2,17 +2,10 @@ import numpy as np
 import pandas as pd
 from typing import List
 from puzzle import Puzzle
-from heapq import heappop, heappush
-from collections import deque
 
 from rubik24.solve41 import solve_greed_41
 from rubik24.solve51 import solve_greed_51
 from rubik24.solve61 import solve_greed_61
-
-
-def convert_command_41(path):
-
-    pass
 
 
 class RubiksCubeLarge:
@@ -134,8 +127,6 @@ class RubiksCubeLarge:
         return None
 
 
-
-
 def translate_41(path, n, k):
     assert k < n - 1 - k
     res_path = []
@@ -189,11 +180,13 @@ def translate_61(path, n, i, j):
 
 
 if __name__ == "__main__":
-    _n = 33
+    _n = 9
+    assert _n % 2 == 1
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
+    _q = None
     for _i, _row in puzzles_df_pick.iterrows():
-        if _row["solution_state"].split(";")[1] != "B":
+        if _row["solution_state"].split(";")[1] != "A":
             continue
         _q = RubiksCubeLarge(
             puzzle_id=_row["id"], size=_n,
@@ -203,9 +196,10 @@ if __name__ == "__main__":
         )
     _q.align_center()
     print(_q.cube.move_history)
-    for _i in range(15, 0, -1):
-        for _j in range(_i, 17):
+    _m = (_n - 1) // 2
+    for _i in range(_m - 1, 0, -1):
+        for _j in range(_i, _m + 1):
             _q.run_subset(_i, _j)
-            if _i != _j and _j != 16:
+            if _i != _j and _j != _m:
                 _q.run_subset(_j, _i)
     print(len(_q.cube.move_history))
