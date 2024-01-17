@@ -1,6 +1,6 @@
 import pandas as pd
 
-sub_path = "../submissions/sub_harada_2024-01-14-00:48.csv"
+sub_path = "../submissions/sub_harada_2024-01-15-14:11.csv"
 
 sub_df = pd.read_csv(sub_path)
 sub_df["length"] = sub_df["moves"].map(lambda x: x.count(".") + 1)

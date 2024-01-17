@@ -7,7 +7,7 @@ new_list = [
     "../output/wreath_small_greed.csv",
 ]
 
-sample_df = pd.read_csv("../submissions/submission_431376.csv")
+sample_df = pd.read_csv("../submissions/submission_404515.csv")
 length_list = [0] * sample_df.shape[0]
 res = []
 
@@ -28,5 +28,5 @@ if __name__ == "__main__":
     print(sum(length_list))
     dt_now = datetime.datetime.now()
     pd.DataFrame({"id": sample_df["id"], "moves": res}).to_csv(
-        f"../submissions/sub_harada_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False
+        f"../submissions/sub_harada_{dt_now.strftime('%Y-%m-%d-%H-%M')}.csv", index=False
     )
