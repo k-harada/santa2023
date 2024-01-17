@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
-from itertools import combinations
-from typing import Dict, List, Optional
+from typing import List
 from puzzle import Puzzle
 from heapq import heappop, heappush
 from collections import deque
 
 from rubik24.allowed_moves import get_allowed_moves_24
-from rubik_abstract.magic51 import magic51
+from rubik24.compress_magic51 import arr_dict, command_dict
 
 
 def _modify_path(path_left, path_right):
@@ -26,15 +25,15 @@ def heuristic(current_state: np.array, goal_state: np.array):
         if x != y:
             h += 1
     # print(current_state, goal_state, h)
-    return h * 1000
+    return h * 10
 
 
-def solve_greed_51(initial_state: List[str], goal_state: List[str], puzzle_type: str, two_side: bool):
+def solve_greed_51(initial_state: List[str], goal_state: List[str]):
 
-    allowed_moves_arr = get_allowed_moves_24(puzzle_type)
+    allowed_moves_arr = get_allowed_moves_24("cube_5/5/5")
     assert len(initial_state) == 24
     n = 5
-    open_set_left = deque()
+    open_set_left = []
     open_set_right = deque()
     closed_set_left = set()
     closed_set_right = set()
@@ -47,45 +46,13 @@ def solve_greed_51(initial_state: List[str], goal_state: List[str], puzzle_type:
     print(_initial_state)
     print(_goal_state)
 
-    open_set_left.append((0, _initial_state, []))
+    heappush(open_set_left, (0, _initial_state, []))
     open_set_right.append((0, _goal_state, []))
-    action_list = ["r0", "-r0", "r4", "-r4", "f0", "-f0", "f4", "-f4", "d0", "-d0", "d4", "-d4"]
-    if two_side:
-        # magic_list = [[a] for a in action_list]
-        magic_list = []
-        for d1 in ["d", "r", "f"]:
-            for d2 in ["d", "r", "f"]:
-                if d1 == d2:
-                    continue
-                for flag_int in range(4):
-                    magic_list.append(magic51(2, 3, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(2, 3, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(3, 2, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(3, 2, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(2, 1, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(2, 1, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(1, 2, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(1, 2, 5, d1, d2, flag_int, True))
-    else:
-        # magic_list = [[a] for a in action_list]
-        magic_list = []
-        for d1 in ["d"]:
-            for d2 in ["d", "r", "f"]:
-                if d1 == d2:
-                    continue
-                for flag_int in range(4):
-                    magic_list.append(magic51(2, 3, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(2, 3, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(3, 2, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(3, 2, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(2, 1, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(2, 1, 5, d1, d2, flag_int, True))
-                    magic_list.append(magic51(1, 2, 5, d1, d2, flag_int, False))
-                    magic_list.append(magic51(1, 2, 5, d1, d2, flag_int, True))
-    print(len(magic_list))
+    magic_list = list(arr_dict.keys())
+
     while len(open_set_left):
 
-        _, _current_state, path = open_set_left.popleft()
+        _, _current_state, path = heappop(open_set_left)
         current_state = np.array(list(_current_state.split("_")))
         # print(_current_state)
         if np.random.uniform() < 0.0001:
@@ -104,13 +71,12 @@ def solve_greed_51(initial_state: List[str], goal_state: List[str], puzzle_type:
         closed_set_left.add(_current_state)
 
         for magic in magic_list:
-            new_state = current_state.copy()
-            for action in magic:
-                new_state = new_state[allowed_moves_arr[action]]
+            new_state = current_state[arr_dict[magic]]
             _new_state = "_".join(new_state)
             if _new_state not in closed_set_left:
-                priority = len(path) + len(magic)
-                open_set_left.append((priority, _new_state, path + magic))
+                h = heuristic(new_state, goal_state_arr)
+                priority = len(path) + len(command_dict[magic]) + h
+                heappush(open_set_left, (priority, _new_state, path + command_dict[magic]))
 
         # right
         _, _current_state, path = open_set_right.popleft()
@@ -132,20 +98,17 @@ def solve_greed_51(initial_state: List[str], goal_state: List[str], puzzle_type:
         closed_set_right.add(_current_state)
 
         for magic in magic_list:
-            new_state = current_state.copy()
-            for action in magic:
-                new_state = new_state[allowed_moves_arr[action]]
-            h = heuristic(new_state, goal_state_arr)
+            new_state = current_state[arr_dict[magic]]
             _new_state = "_".join(new_state)
             if _new_state not in closed_set_right:
-                priority = len(path) + len(magic) + h
-                open_set_right.append((priority, _new_state, path + magic))
+                priority = len(path) + len(command_dict[magic])
+                open_set_right.append((priority, _new_state, path + command_dict[magic]))
 
     return None
 
 
 def test_phase1(initial_state, goal_state):
-    path = solve_greed_51(initial_state, goal_state, "cube_5/5/5", two_side=True)
+    path = solve_greed_51(initial_state, goal_state)
     print(path)
 
     initial_state_ext = ["O"] * (5 * 5 * 6)
@@ -172,7 +135,7 @@ def test_phase1(initial_state, goal_state):
 
 
 def test_phase2(initial_state, goal_state):
-    path = solve_greed_51(initial_state, goal_state, "cube_5/5/5", two_side=False)
+    path = solve_greed_51(initial_state, goal_state)
     print(path)
 
     initial_state_ext = ["O"] * (5 * 5 * 6)
@@ -226,33 +189,33 @@ if __name__ == "__main__":
         )
         _initial_state = list(_row["initial_state"].split(";"))
         _goal_state = list(_row["solution_state"].split(";"))
-        if _goal_state[0] != _goal_state[1]:
-            continue
-        _initial_state_pick = []
-        _goal_state_pick = []
-        for _j in range(6):
-            _initial_state_pick.append(_q5.state[5 * 5 * _j + 7])
-            _initial_state_pick.append(_q5.state[5 * 5 * _j + 11])
-            _initial_state_pick.append(_q5.state[5 * 5 * _j + 13])
-            _initial_state_pick.append(_q5.state[5 * 5 * _j + 17])
-            if _j in [0, 5]:
-                _goal_state_pick.append(_goal_state[5 * 5 * _j + 7])
-                _goal_state_pick.append(_goal_state[5 * 5 * _j + 11])
-                _goal_state_pick.append(_goal_state[5 * 5 * _j + 13])
-                _goal_state_pick.append(_goal_state[5 * 5 * _j + 17])
-            else:
-                _goal_state_pick = _goal_state_pick + ["X"] * 4
-        _initial_state_pick_mask = []
-        for _x in _initial_state_pick:
-            if _x in _goal_state_pick:
-                _initial_state_pick_mask.append(_x)
-            else:
-                _initial_state_pick_mask.append("X")
-        print(_initial_state_pick_mask)
-        print(_goal_state_pick)
-        _path = solve_greed_51(_initial_state_pick_mask, _goal_state_pick, "cube_5/5/5", two_side=True)
-        for _m in _path:
-            _q5.operate(_m)
+        # if _goal_state[0] != _goal_state[1]:
+        #     continue
+        # _initial_state_pick = []
+        # _goal_state_pick = []
+        # for _j in range(6):
+        #     _initial_state_pick.append(_q5.state[5 * 5 * _j + 7])
+        #     _initial_state_pick.append(_q5.state[5 * 5 * _j + 11])
+        #     _initial_state_pick.append(_q5.state[5 * 5 * _j + 13])
+        #     _initial_state_pick.append(_q5.state[5 * 5 * _j + 17])
+        #     if _j in [0, 5]:
+        #         _goal_state_pick.append(_goal_state[5 * 5 * _j + 7])
+        #         _goal_state_pick.append(_goal_state[5 * 5 * _j + 11])
+        #         _goal_state_pick.append(_goal_state[5 * 5 * _j + 13])
+        #         _goal_state_pick.append(_goal_state[5 * 5 * _j + 17])
+        #     else:
+        #         _goal_state_pick = _goal_state_pick + ["X"] * 4
+        # _initial_state_pick_mask = []
+        # for _x in _initial_state_pick:
+        #     if _x in _goal_state_pick:
+        #         _initial_state_pick_mask.append(_x)
+        #     else:
+        #         _initial_state_pick_mask.append("X")
+        # print(_initial_state_pick_mask)
+        # print(_goal_state_pick)
+        # _path = solve_greed_51(_initial_state_pick_mask, _goal_state_pick, "cube_5/5/5", two_side=True)
+        # for _m in _path:
+        #     _q5.operate(_m)
 
         _initial_state_pick = []
         _goal_state_pick = []
@@ -266,7 +229,8 @@ if __name__ == "__main__":
             _goal_state_pick.append(_goal_state[5 * 5 * _j + 13])
             _goal_state_pick.append(_goal_state[5 * 5 * _j + 17])
 
-        _path = solve_greed_51(_initial_state_pick, _goal_state_pick, "cube_5/5/5", two_side=False)
+        _path = solve_greed_51(_initial_state_pick, _goal_state_pick)
         for _m in _path:
             _q5.operate(_m)
+        print(len(_path))
         print(_q5.state)

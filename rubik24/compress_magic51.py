@@ -1,14 +1,9 @@
 import numpy as np
-import pandas as pd
-from itertools import combinations
 from sympy.combinatorics import Permutation
-from typing import Dict, List, Optional
 from puzzle import Puzzle
-from heapq import heappop, heappush
-from collections import deque
 
 from rubik24.allowed_moves import get_allowed_moves_24
-from rubik_abstract.magic51 import magic51, pick_inner_51
+from rubik24.magic51 import magic51, pick_inner_51
 
 
 # 3点を入れ替える魔法大全
@@ -43,14 +38,14 @@ for d1 in ["d", "r", "f"]:
         if d1 == d2:
             continue
         for flag_int in range(4):
-            magic_list_add.append(magic51(2, 3, 5, d1, d2, flag_int, False, add=True))
-            magic_list_add.append(magic51(2, 3, 5, d1, d2, flag_int, True, add=True))
-            magic_list_add.append(magic51(3, 2, 5, d1, d2, flag_int, False, add=True))
-            magic_list_add.append(magic51(3, 2, 5, d1, d2, flag_int, True, add=True))
-            magic_list_add.append(magic51(2, 1, 5, d1, d2, flag_int, False, add=True))
-            magic_list_add.append(magic51(2, 1, 5, d1, d2, flag_int, True, add=True))
-            magic_list_add.append(magic51(1, 2, 5, d1, d2, flag_int, False, add=True))
-            magic_list_add.append(magic51(1, 2, 5, d1, d2, flag_int, True, add=True))
+            magic_list_add.append(magic51(2, 3, 5, d1, d2, flag_int, False, add=1))
+            magic_list_add.append(magic51(2, 3, 5, d1, d2, flag_int, True, add=1))
+            magic_list_add.append(magic51(3, 2, 5, d1, d2, flag_int, False, add=1))
+            magic_list_add.append(magic51(3, 2, 5, d1, d2, flag_int, True, add=1))
+            magic_list_add.append(magic51(2, 1, 5, d1, d2, flag_int, False, add=1))
+            magic_list_add.append(magic51(2, 1, 5, d1, d2, flag_int, True, add=1))
+            magic_list_add.append(magic51(1, 2, 5, d1, d2, flag_int, False, add=1))
+            magic_list_add.append(magic51(1, 2, 5, d1, d2, flag_int, True, add=1))
 
 allowed_moves_arr = get_allowed_moves_24("cube_5/5/5")
 
@@ -115,6 +110,7 @@ arr_dict, command_dict = compress_magic()
 
 
 if __name__ == "__main__":
+    print(len(arr_dict.keys()))
     for _k in arr_dict.keys():
         _n = 5
         _p5 = Puzzle(
@@ -131,3 +127,4 @@ if __name__ == "__main__":
                 _pe = _p5.allowed_moves[_m] * _pe
         print(pick_inner_51(_pe, _n, 3))
         print(_k, arr_dict[_k])
+

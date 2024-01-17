@@ -10,7 +10,7 @@ from collections import deque
 
 def magic51(
         k: int, m: int, n: int = 100, d1: str = "r", d2: str = "d", flag_int: int = 0,
-        rev: bool = False, diag: bool = False, add: bool = False
+        rev: bool = False, diag: bool = False, add: int = 0
 ):
     # https://cube.uubio.com/5x5x5/
     assert 0 <= k < n
@@ -51,8 +51,8 @@ def magic51(
         f3 = ""
     res_path = [f"{f0}{d1}{k}"] * c + [f"{f2}{d2}{v}"] + [f"{f0}{d1}{m}"] * c + [
         f"{f3}{d2}{v}"] + [f"{f1}{d1}{k}"] * c + [f"{f2}{d2}{v}"] + [f"{f1}{d1}{m}"] * c + [f"{f3}{d2}{v}"]
-    if add:
-        res_path = [f"{f2}{d2}{v}"] + res_path + [f"{f3}{d2}{v}"]
+    if add > 0:
+        res_path = [f"{f2}{d2}{v}"] * add + res_path + [f"{f3}{d2}{v}"] * add
     return res_path
 
 

@@ -18,9 +18,9 @@ def _modify_path(path_left, path_right):
     return path
 
 
-def solve_greed_41(initial_state: List[str], goal_state: List[str], puzzle_type: str, two_side: bool):
+def solve_greed_41(initial_state: List[str], goal_state: List[str], two_side: bool):
     # ABAB, N1等には使えない
-    allowed_moves = get_allowed_moves_24(puzzle_type)
+    allowed_moves = get_allowed_moves_24("cube_4/4/4")
     assert len(initial_state) == 24
 
     open_set_left = deque()
@@ -94,7 +94,7 @@ def solve_greed_41(initial_state: List[str], goal_state: List[str], puzzle_type:
 
 
 def test_phase1(initial_state, goal_state):
-    path = solve_greed_41(initial_state, goal_state, "cube_4/4/4", two_side=True)
+    path = solve_greed_41(initial_state, goal_state, two_side=True)
     print(path)
 
     initial_state_ext = ["O"] * (4 * 4 * 6)
@@ -121,7 +121,7 @@ def test_phase1(initial_state, goal_state):
 
 
 def test_phase2(initial_state, goal_state):
-    path = solve_greed_41(initial_state, goal_state, "cube_4/4/4", two_side=False)
+    path = solve_greed_41(initial_state, goal_state, two_side=False)
     print(path)
 
     initial_state_ext = ["O"] * (4 * 4 * 6)
@@ -197,7 +197,7 @@ if __name__ == "__main__":
                 _initial_state_pick_mask.append("X")
         print(_initial_state_pick_mask)
         print(_goal_state_pick)
-        _path = solve_greed_41(_initial_state_pick_mask, _goal_state_pick, "cube_4/4/4", two_side=True)
+        _path = solve_greed_41(_initial_state_pick_mask, _goal_state_pick, two_side=True)
         for _m in _path:
             _q4.operate(_m)
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
             _goal_state_pick.append(_goal_state[4 * 4 * _j + 9])
             _goal_state_pick.append(_goal_state[4 * 4 * _j + 10])
 
-        _path = solve_greed_41(_initial_state_pick, _goal_state_pick, "cube_4/4/4", two_side=False)
+        _path = solve_greed_41(_initial_state_pick, _goal_state_pick, two_side=False)
         for _m in _path:
             _q4.operate(_m)
         print(_q4.state)

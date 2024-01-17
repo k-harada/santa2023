@@ -1,0 +1,211 @@
+import numpy as np
+import pandas as pd
+from typing import List
+from puzzle import Puzzle
+from heapq import heappop, heappush
+from collections import deque
+
+from rubik24.solve41 import solve_greed_41
+from rubik24.solve51 import solve_greed_51
+from rubik24.solve61 import solve_greed_61
+
+
+def convert_command_41(path):
+
+    pass
+
+
+class RubiksCubeLarge:
+
+    def __init__(
+            self, puzzle_id: int, size: int, initial_state: List[str], solution_state: List[str],
+            num_wildcards: int = 0
+    ):
+        self.n = size
+        self.cube = Puzzle(
+            puzzle_id=puzzle_id, puzzle_type=f"cube_{size}/{size}/{size}",
+            solution_state=solution_state,
+            initial_state=initial_state,
+            num_wildcards=0
+        )
+
+    def align_center(self):
+        n = self.n
+        if n % 2 == 0:
+            print("No Center")
+            return None
+        k = (n - 1) // 2
+        a = (n ** 2 - 1) // 2
+        # greedy
+        if self.cube.state[a] != self.cube.solution_state[a]:
+            for m in [f"f{k}", f"-f{k}", f"r{k}", f"-r{k}"]:
+                self.cube.operate(m)
+                if self.cube.state[a] == self.cube.solution_state[a]:
+                    break
+                else:
+                    self.cube.undo()
+            else:
+                self.cube.operate(f"f{k}")
+                self.cube.operate(f"f{k}")
+        if self.cube.state[a + n * n] != self.cube.solution_state[a + n * n]:
+            for m in [f"d{k}", f"-d{k}"]:
+                self.cube.operate(m)
+                if self.cube.state[a + n * n] == self.cube.solution_state[a + n * n]:
+                    break
+                else:
+                    self.cube.undo()
+            else:
+                self.cube.operate(f"d{k}")
+                self.cube.operate(f"d{k}")
+
+    def get_subset(self, i: int, j: int):
+        n = self.n
+        assert max(i, j) <= (n - 1) // 2
+        assert i < (n - 1) // 2
+        current_state_sub = []
+        goal_state_sub = []
+        for z in range(6):
+            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            if j * 2 == n - 1:
+                current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+                current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+            else:
+                current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+                current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+        return current_state_sub, goal_state_sub
+
+    def run_subset(self, i: int, j: int):
+        n = self.n
+        assert max(i, j) <= n - 1 - max(i, j)
+        assert i < n - 1 - i
+        if i == j:
+            current_state_sub, goal_state_sub = self.get_subset(i, i)
+            current_state_sub_mask = []
+            goal_state_sub_mask = []
+            ud_set = goal_state_sub[:4] + goal_state_sub[-4:]
+            for x in current_state_sub:
+                if x in ud_set:
+                    current_state_sub_mask.append(x)
+                else:
+                    current_state_sub_mask.append("X")
+            for x in goal_state_sub:
+                if x in ud_set:
+                    goal_state_sub_mask.append(x)
+                else:
+                    goal_state_sub_mask.append("X")
+            path = solve_greed_41(current_state_sub_mask, goal_state_sub_mask, two_side=True)
+            path = translate_41(path, n, i)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+            current_state_sub, goal_state_sub = self.get_subset(i, i)
+            path = solve_greed_41(current_state_sub, goal_state_sub, two_side=False)
+            path = translate_41(path, n, i)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+            print(self.cube.state)
+        elif 2 * j == n - 1:
+            current_state_sub, goal_state_sub = self.get_subset(i, j)
+            print(current_state_sub)
+            path = solve_greed_51(current_state_sub, goal_state_sub)
+            path = translate_51(path, n, i, j)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+            print(self.cube.state)
+        else:
+            current_state_sub, goal_state_sub = self.get_subset(i, j)
+            print(current_state_sub)
+            path = solve_greed_61(current_state_sub, goal_state_sub)
+            path = translate_61(path, n, i, j)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+            print(self.cube.state)
+        return None
+
+
+
+
+def translate_41(path, n, k):
+    assert k < n - 1 - k
+    res_path = []
+    for m in path:
+        if m[-1] == "3":
+            res_path.append(m[:-1] + str(n - 1))
+        elif m[-1] == "2":
+            res_path.append(m[:-1] + str(n - 1 - k))
+        elif m[-1] == "1":
+            res_path.append(m[:-1] + str(k))
+        else:
+            res_path.append(m)
+    return res_path
+
+
+def translate_51(path, n, i, j):
+    assert i < j
+    assert j == n - 1 - j
+    res_path = []
+    for m in path:
+        if m[-1] == "4":
+            res_path.append(m[:-1] + str(n - 1))
+        elif m[-1] == "3":
+            res_path.append(m[:-1] + str(n - 1 - i))
+        elif m[-1] == "2":
+            res_path.append(m[:-1] + str(j))
+        elif m[-1] == "1":
+            res_path.append(m[:-1] + str(i))
+        else:
+            res_path.append(m)
+    return res_path
+
+
+def translate_61(path, n, i, j):
+    assert max(i, j) < n - 1 - max(i, j)
+    res_path = []
+    for m in path:
+        if m[-1] == "5":
+            res_path.append(m[:-1] + str(n - 1))
+        elif m[-1] == "4":
+            res_path.append(m[:-1] + str(n - 1 - i))
+        elif m[-1] == "3":
+            res_path.append(m[:-1] + str(n - 1 - j))
+        elif m[-1] == "2":
+            res_path.append(m[:-1] + str(j))
+        elif m[-1] == "1":
+            res_path.append(m[:-1] + str(i))
+        else:
+            res_path.append(m)
+    return res_path
+
+
+if __name__ == "__main__":
+    _n = 33
+    puzzles_df = pd.read_csv("../input/puzzles.csv")
+    puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
+    for _i, _row in puzzles_df_pick.iterrows():
+        if _row["solution_state"].split(";")[1] != "B":
+            continue
+        _q = RubiksCubeLarge(
+            puzzle_id=_row["id"], size=_n,
+            solution_state=list(_row["solution_state"].split(";")),
+            initial_state=list(_row["initial_state"].split(";")),
+            num_wildcards=_row["num_wildcards"]
+        )
+    _q.align_center()
+    print(_q.cube.move_history)
+    for _i in range(15, 0, -1):
+        for _j in range(_i, 17):
+            _q.run_subset(_i, _j)
+            if _i != _j and _j != 16:
+                _q.run_subset(_j, _i)
+    print(len(_q.cube.move_history))
