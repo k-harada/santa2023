@@ -19,16 +19,21 @@ def _modify_path(path_left, path_right):
     return path
 
 
-def heuristic(current_state: np.array, goal_state: np.array):
+def heuristic(current_state: np.array, goal_state: np.array, two_side: bool = False):
     h = 0
-    for x, y in zip(current_state, goal_state):
+    for i in range(24):
+        x, y = current_state[i], goal_state[i]
         if x != y:
             h += 1
+            if (i < 4 or i >= 20) and two_side:
+                h += 10000
+            elif (i < 8 or i >= 26) and two_side:
+                h += 100
     # print(current_state, goal_state, h)
     return h * 10
 
 
-def solve_greed_51(initial_state: List[str], goal_state: List[str]):
+def solve_greed_51(initial_state: List[str], goal_state: List[str], two_side: bool = True):
 
     allowed_moves_arr = get_allowed_moves_24("cube_5/5/5")
     assert len(initial_state) == 24
@@ -74,7 +79,7 @@ def solve_greed_51(initial_state: List[str], goal_state: List[str]):
             new_state = current_state[arr_dict[magic]]
             _new_state = "_".join(new_state)
             if _new_state not in closed_set_left:
-                h = heuristic(new_state, goal_state_arr)
+                h = heuristic(new_state, goal_state_arr, two_side)
                 priority = len(path) + len(command_dict[magic]) + h
                 heappush(open_set_left, (priority, _new_state, path + command_dict[magic]))
 
@@ -219,6 +224,9 @@ if __name__ == "__main__":
 
         _initial_state_pick = []
         _goal_state_pick = []
+        if _q5.puzzle_id in [244]:
+            _q5.operate("r1")
+
         for _j in range(6):
             _initial_state_pick.append(_q5.state[5 * 5 * _j + 7])
             _initial_state_pick.append(_q5.state[5 * 5 * _j + 11])
@@ -229,8 +237,9 @@ if __name__ == "__main__":
             _goal_state_pick.append(_goal_state[5 * 5 * _j + 13])
             _goal_state_pick.append(_goal_state[5 * 5 * _j + 17])
 
+
         _path = solve_greed_51(_initial_state_pick, _goal_state_pick)
         for _m in _path:
             _q5.operate(_m)
-        print(len(_path))
+        print(_q5.puzzle_id, len(_path))
         print(_q5.state)

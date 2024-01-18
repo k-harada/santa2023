@@ -80,27 +80,20 @@ class RubiksCubeLarge:
         assert max(i, j) <= n - 1 - max(i, j)
         assert i < n - 1 - i
         if i == j:
+            # ここは賢い方法に変えたい
+            print(i)
+            if n == 33:
+                if i in [14, 13, 12, 11, 6, 5, 4, 2]:
+                    self.cube.operate(f"r{i}")
+            elif n == 5:
+                if i == 1:
+                    self.cube.operate(f"r{i}")
+            if i + 1 == n - 1 - i - 1:
+                first_flag = True
+            else:
+                first_flag = False
             current_state_sub, goal_state_sub = self.get_subset(i, i)
-            current_state_sub_mask = []
-            goal_state_sub_mask = []
-            ud_set = goal_state_sub[:4] + goal_state_sub[-4:]
-            for x in current_state_sub:
-                if x in ud_set:
-                    current_state_sub_mask.append(x)
-                else:
-                    current_state_sub_mask.append("X")
-            for x in goal_state_sub:
-                if x in ud_set:
-                    goal_state_sub_mask.append(x)
-                else:
-                    goal_state_sub_mask.append("X")
-            path = solve_greed_41(current_state_sub_mask, goal_state_sub_mask, two_side=True)
-            path = translate_41(path, n, i)
-            print(path)
-            for m in path:
-                self.cube.operate(m)
-            current_state_sub, goal_state_sub = self.get_subset(i, i)
-            path = solve_greed_41(current_state_sub, goal_state_sub, two_side=False)
+            path = solve_greed_41(current_state_sub, goal_state_sub, two_side=True, first=first_flag)
             path = translate_41(path, n, i)
             print(path)
             for m in path:
@@ -180,13 +173,13 @@ def translate_61(path, n, i, j):
 
 
 if __name__ == "__main__":
-    _n = 9
+    _n = 5
     assert _n % 2 == 1
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
     _q = None
     for _i, _row in puzzles_df_pick.iterrows():
-        if _row["solution_state"].split(";")[1] != "A":
+        if _row["solution_state"].split(";")[1] != "N1":
             continue
         _q = RubiksCubeLarge(
             puzzle_id=_row["id"], size=_n,

@@ -3,10 +3,11 @@ from sympy.combinatorics import Permutation
 from puzzle import Puzzle
 
 from rubik24.allowed_moves import get_allowed_moves_24
-from rubik24.magic41 import magic41, pick_inner_41
+from rubik24.magic41 import magic412, pick_inner_41
 
-# 5点を巡回させる魔法大全
+# ２箇所で互換させる魔法大全
 
+allowed_moves_arr = get_allowed_moves_24("cube_4/4/4")
 magic_list = []
 for curl in [0, 1, -1, 2, -2]:
     for _add in [0, 3, 1, 2]:
@@ -16,22 +17,24 @@ for curl in [0, 1, -1, 2, -2]:
                     continue
                 for flag_int in range(4):
                     for b in [False, True]:
-                        magic_list.append(magic41(1, 4, d1, d2, flag_int, False, b, add=_add, curl=curl))
-                        magic_list.append(magic41(2, 4, d1, d2, flag_int, False, b, add=_add, curl=curl))
-                        magic_list.append(magic41(1, 4, d1, d2, flag_int, True, b, add=_add, curl=curl))
-                        magic_list.append(magic41(2, 4, d1, d2, flag_int, True, b, add=_add, curl=curl))
+                        magic_list.append(magic412(1, 4, d1, d2, flag_int, False, b, add=_add, curl=curl))
+                        magic_list.append(magic412(2, 4, d1, d2, flag_int, False, b, add=_add, curl=curl))
+                        magic_list.append(magic412(1, 4, d1, d2, flag_int, True, b, add=_add, curl=curl))
+                        magic_list.append(magic412(2, 4, d1, d2, flag_int, True, b, add=_add, curl=curl))
+
+
 
 #         k: int, n: int = 100, d1: str = "r", d2: str = "d", flag_int: int = 0,
 #         rev: bool = False, diag: bool = False, add: int = 0
-allowed_moves_arr = get_allowed_moves_24("cube_4/4/4")
 # print(allowed_moves_arr)
 
-for m in ["d1", "d2", "-d1", "-d2", "r1", "r2", "-r1", "-r2", "f1", "f2", "-f1", "-f2"]:
-    magic_list.append([m])
-for m in ["d0", "d3", "-d0", "-d3", "r0", "r3", "-r0", "-r3", "f0", "f3", "-f0", "-f3"]:
-    magic_list.append([m])
 
-def compress_magic():
+def compress_magic(first: bool = False):
+    # for m in ["d1", "d2", "-d1", "-d2", "r1", "r2", "-r1", "-r2", "f1", "f2", "-f1", "-f2"]:
+    #     magic_list.append([m])
+    if first:
+        for m in ["d0", "d3", "-d0", "-d3", "r0", "r3", "-r0", "-r3", "f0", "f3", "-f0", "-f3"]:
+            magic_list.append([m])
     arr_dict = dict()
     command_dict = dict()
     for i, magic in enumerate(magic_list):

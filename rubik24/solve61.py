@@ -18,16 +18,20 @@ def _modify_path(path_left, path_right):
     return path
 
 
-def heuristic(current_state: np.array, goal_state: np.array):
+def heuristic(current_state: np.array, goal_state: np.array, two_side: bool = False):
     h = 0
-    for x, y in zip(current_state, goal_state):
+    for i in range(24):
+        x, y = current_state[i], goal_state[i]
         if x != y:
             h += 1
+            if (i < 4 or i >= 20) and two_side:
+                h += 10000
+            elif (i < 8 or i >= 26) and two_side:
+                h += 100
     # print(current_state, goal_state, h)
     return h * 10
 
-
-def solve_greed_61(initial_state: List[str], goal_state: List[str]):
+def solve_greed_61(initial_state: List[str], goal_state: List[str], two_side: bool = True):
 
     assert len(initial_state) == 24
 
@@ -72,7 +76,7 @@ def solve_greed_61(initial_state: List[str], goal_state: List[str]):
             new_state = current_state[arr_dict[magic]]
             _new_state = "_".join(new_state)
             if _new_state not in closed_set_left:
-                h = heuristic(new_state, goal_state_arr)
+                h = heuristic(new_state, goal_state_arr, two_side)
                 priority = len(path) + len(command_dict[magic]) + h
                 heappush(open_set_left, (priority, _new_state, path + command_dict[magic]))
 
