@@ -64,14 +64,16 @@ def compress_magic(first: bool = False):
             pass
             # print(key)  # no print is expected
 
-    # print(len(command_dict.keys()))  # 960
+    print(len(command_dict.keys()))  # 960
 
     return arr_dict, command_dict
 
 
-arr_dict, command_dict = compress_magic()
+# arr_dict, command_dict = compress_magic()
+
 
 if __name__ == "__main__":
+    arr_dict, command_dict = compress_magic()
     print(len(arr_dict.keys()))
     for _k in arr_dict.keys():
         _n = 4
@@ -91,3 +93,32 @@ if __name__ == "__main__":
         print(_k, arr_dict[_k])
     print(list(sorted(arr_dict.keys())))
 
+    print(len(arr_dict.keys()))
+    for _k in arr_dict.keys():
+        _n = 7
+        _p7 = Puzzle(
+            puzzle_id=_n * 10101, puzzle_type=f"cube_{_n}/{_n}/{_n}",
+            solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
+            num_wildcards=0
+        )
+        _path = command_dict[_k]
+        _pe = Permutation(_n * _n * 6)
+        for _m in _path:
+            if _m[-1] == "3":
+                _mm = _m[:-1] + "6"
+            elif _m[-1] == "2":
+                _mm = _m[:-1] + "5"
+            else:
+                _mm = _m
+            if _mm[0] == "-":
+                _pe = (_p7.allowed_moves[_mm[1:]] ** (-1)) * _pe
+            else:
+                _pe = _p7.allowed_moves[_mm] * _pe
+        # print(pick_inner_41(_pe, _n, 1))
+        if len(pick_inner_41(_pe, _n, 1)) > 2:
+            print(_pe, pick_inner_41(_pe, _n, 1))
+        for _, _t in pick_inner_41(_pe, _n, 1):
+            if len(_t) > 2:
+                print(pick_inner_41(_pe, _n, 1))
+        # print(_k, arr_dict[_k])
+    print(list(sorted(arr_dict.keys())))

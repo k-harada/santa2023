@@ -8,6 +8,16 @@ from rubik24.solve51 import solve_greed_51
 from rubik24.solve61 import solve_greed_61
 
 
+def dummy7():
+    _n = 7
+    p7 = Puzzle(
+        puzzle_id=_n * 10101, puzzle_type=f"cube_{_n}/{_n}/{_n}",
+        solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
+        num_wildcards=0
+    )
+    return p7
+
+
 class RubiksCubeLarge:
 
     def __init__(
@@ -75,6 +85,48 @@ class RubiksCubeLarge:
             goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
+    def get_subset_edge(self, i: int, j: int, with_center: bool = False):
+        n = self.n
+        m = (n - 1) // 2
+        assert j < m
+        assert i == 0
+        current_state_sub = []
+        goal_state_sub = []
+        for z in range(6):
+            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + i * n + m])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + m])
+            current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
+
+            current_state_sub.append(self.cube.state[z * n * n + j * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + m * n + i])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + i])
+                current_state_sub.append(self.cube.state[z * n * n + m * n + (n - 1 - i)])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + m])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + m])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+
+        return current_state_sub, goal_state_sub
+
     def run_subset(self, i: int, j: int):
         n = self.n
         assert max(i, j) <= n - 1 - max(i, j)
@@ -92,9 +144,17 @@ class RubiksCubeLarge:
                 first_flag = True
             else:
                 first_flag = False
+            # print(i, first_flag)
             current_state_sub, goal_state_sub = self.get_subset(i, i)
-            path = solve_greed_41(current_state_sub, goal_state_sub, two_side=True, first=first_flag)
-            path = translate_41(path, n, i)
+            path_4 = solve_greed_41(current_state_sub, goal_state_sub, two_side=True, first=first_flag)
+            path = translate_41(path_4, n, i)
+            p7 = dummy7()
+            path_7 = translate_41(path_4, 7, 1)
+            for m in path_7:
+                p7.operate(m)
+            print("dummy result")
+            print(p7.state)
+            print(p7.solution_state)
             print(path)
             for m in path:
                 self.cube.operate(m)
@@ -117,6 +177,66 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
             print(self.cube.state)
+        return None
+
+    def _check(self, c: int, i: int):
+        n = self.n
+        res = 0
+        for x in range(i, n - i):
+            for y in range(i, n - i):
+                p = n * n * c + x * _n + y
+                if self.cube.state[p] != self.cube.solution_state[p]:
+                    res += 1
+        return res
+
+    def _print(self, c: int, i: int):
+        n = self.n
+        res = 0
+        for x in range(i, n - i):
+            p = n * n * c + x * _n + i
+            q = n * n * c + x * _n + n - i
+            print(self.cube.state[p:q])
+        return res
+
+    def adjust_center(self, i: int):
+        n = self.n
+        for c in range(6):
+            if c == 0:
+                action = f"-d{n - 1}"
+            elif c == 1:
+                action = f"f{0}"
+            elif c == 2:
+                action = f"r{0}"
+            elif c == 3:
+                action = f"-f{n - 1}"
+            elif c == 4:
+                action = f"-r{n - 1}"
+            else:
+                action = f"d{0}"
+            # 順に試す
+            print(self._check(c, i))
+            if self._check(c, i) > 0:
+                self.cube.operate(action)
+                print(self._check(c, i))
+            else:
+                print("No Need", i, c)
+            if self._check(c, i) > 0:
+                self.cube.operate(action)
+                print(self._check(c, i))
+            if self._check(c, i) > 0:
+                self.cube.undo()
+                self.cube.undo()
+                if action[0] == "-":
+                    self.cube.operate(action[1:])
+                else:
+                    self.cube.operate("-" + action)
+                print(self._check(c, i))
+            if self._check(c, i) > 0:
+                self.cube.undo()
+                print("No Success", i, c)
+                self._print(c, i)
+            else:
+                print("Success", i, c)
         return None
 
 
@@ -173,7 +293,7 @@ def translate_61(path, n, i, j):
 
 
 if __name__ == "__main__":
-    _n = 5
+    _n = 33
     assert _n % 2 == 1
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
@@ -195,4 +315,8 @@ if __name__ == "__main__":
             _q.run_subset(_i, _j)
             if _i != _j and _j != _m:
                 _q.run_subset(_j, _i)
+            # _q.adjust_center(_i)
     print(len(_q.cube.move_history))
+    pd.DataFrame(
+        {"id": [_q.cube.puzzle_id], "moves": [".".join(_q.cube.move_history)]}
+    ).to_csv(f"../output/temp_{_q.cube.puzzle_id}.csv", index=False)

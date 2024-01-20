@@ -52,12 +52,19 @@ def solve_greed_41(initial_state: List[str], goal_state: List[str], two_side: bo
     heappush(open_set_left, (0, _initial_state, []))
     open_set_right.append((0, _goal_state, []))
     arr_dict, command_dict = compress_magic(first=first)
-    magic_list = list(arr_dict.keys())
+
+    if not first:
+        magic_list = []
+        for k in arr_dict.keys():
+            if len(command_dict[k]) > 1:
+                magic_list.append(k)
+    else:
+        magic_list = list(arr_dict.keys())
     magic_list_right = []
     for k in magic_list:
         if len(command_dict[k]) == 1:
             magic_list_right.append(k)
-    # print(magic_list_right)
+    # print("hogege", magic_list_right)
 
     while len(open_set_left):
 

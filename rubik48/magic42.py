@@ -113,7 +113,8 @@ if __name__ == "__main__":
         solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
         num_wildcards=0
     )
-    _path = magic42(1, n=4, flag_int=2, curl=2, diag=False)
+    # _path = magic42(1, n=4, flag_int=2, curl=2, diag=False)
+    _path = magic42(2, n=4, flag_int=3, rev=True, curl=0, diag=False)
     print(_path)
 
     _pe = Permutation(_n * _n * 6)
@@ -124,3 +125,32 @@ if __name__ == "__main__":
             _pe = _p4.allowed_moves[_m] * _pe
     print(_pe)
     print(pick_inner_42(_pe, 4, 1))
+
+
+    _n = 9
+    _p9 = Puzzle(
+        puzzle_id=_n * 10101, puzzle_type=f"cube_{_n}/{_n}/{_n}",
+        solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
+        num_wildcards=0
+    )
+    _path = []
+    for _m in magic42(1, n=4, flag_int=0, curl=0, diag=False):
+        if _m[-1] == "3":
+            _path.append(_m[:-1] + "8")
+        elif _m[-1] == "2":
+            _path.append(_m[:-1] + "6")
+        elif _m[-1] == "1":
+            _path.append(_m[:-1] + "2")
+        elif _m[-1] == "0":
+            _path.append(_m[:-1] + "0")
+        else:
+            print(_m)
+    print(_path)
+
+    _pe = Permutation(_n * _n * 6)
+    for _m in _path:
+        if _m[0] == "-":
+            _pe = (_p9.allowed_moves[_m[1:]] ** (-1)) * _pe
+        else:
+            _pe = _p9.allowed_moves[_m] * _pe
+    print(_pe)

@@ -164,6 +164,7 @@ def pick_inner_41(pe: Permutation, n: int, k: int):
             check_41.append(("OK", perm_int))
         if print_flag_2 == 1:
             check_41.append(("Error", perm_int))
+
     return check_41
 
 

@@ -2,12 +2,11 @@ import pandas as pd
 import datetime
 
 new_list = [
-    "../output/globe_swap_random_search_2024-01-14-00:43.csv",
-    "../output/wreath100_random_732.csv",
-    "../output/wreath_small_greed.csv",
+    "../output/temp_done_281.csv",
+    "../output/temp_done_282.csv",
 ]
 
-sample_df = pd.read_csv("../submissions/submission_404515.csv")
+sample_df = pd.read_csv("../submissions/submission_403477.csv")
 length_list = [0] * sample_df.shape[0]
 res = []
 
