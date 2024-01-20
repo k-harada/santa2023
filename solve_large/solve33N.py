@@ -317,6 +317,9 @@ if __name__ == "__main__":
                 _q.run_subset(_j, _i)
             # _q.adjust_center(_i)
     print(len(_q.cube.move_history))
+
+    for _c in range(6):
+        print(_q._check(i=1, c=_c))
     pd.DataFrame(
         {"id": [_q.cube.puzzle_id], "moves": [".".join(_q.cube.move_history)]}
     ).to_csv(f"../output/temp_{_q.cube.puzzle_id}.csv", index=False)

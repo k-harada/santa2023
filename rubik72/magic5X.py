@@ -123,11 +123,11 @@ if __name__ == "__main__":
         num_wildcards=0
     )
     # _path = magic44() + magic44r()
-    # _path = magic442()
+    _path = magic442()
     # _path = magic43()
     # _path = magic43r()
     # _path = magic44()
-    _path = magic33()
+    # _path = magic33()
     print(_path)
 
     _pe = Permutation(_n * _n * 6)
