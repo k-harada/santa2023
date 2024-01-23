@@ -9,7 +9,7 @@ from rubik24.solve61 import solve_greed_61
 
 from rubik3.align_center_deges import solve_bruce_12
 from rubik72.solve72 import align_pair_edges_with_center
-from solve_large.solve33N import RubiksCubeLarge
+from solve_n33.solve33N import RubiksCubeLarge
 
 
 if __name__ == "__main__":
@@ -58,12 +58,15 @@ if __name__ == "__main__":
             print(_m)
     print(_move_edge)
     print(_q.cube.state)
+    named = False
+    if _q.cube.puzzle_id == 283:
+        named = True
 
     for j in range(15, 0, -1):
         _initial_state, _goal_state = _q.get_subset_edge(0, j, with_center=True)
         print(_initial_state)
         print(_goal_state)
-        _path = align_pair_edges_with_center(_initial_state, _goal_state)
+        _path = align_pair_edges_with_center(_initial_state, _goal_state, named=named)
         for _m in _path:
             if _m[-1] == "4":
                 _q.cube.operate(_m[:-1] + "32")

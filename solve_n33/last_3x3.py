@@ -9,7 +9,7 @@ from rubik24.solve61 import solve_greed_61
 
 from rubik3.align_center_deges import solve_bruce_12
 from rubik72.solve72 import align_pair_edges_with_center
-from solve_large.solve33N import RubiksCubeLarge
+from solve_n33.solve33N import RubiksCubeLarge
 
 
 def kociemba_to_kaggle(s, n):

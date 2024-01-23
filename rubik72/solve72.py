@@ -9,7 +9,7 @@ from rubik72.solve52 import solve_greed_52, test_51
 from rubik72.solve5X import solve_greed_5x
 
 
-def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str]):
+def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str], named: bool = False):
     n = 5
     initial_state_dummy = ["O"] * 150
     goal_state_dummy = ["O"] * 150
@@ -47,7 +47,28 @@ def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str]
         num_wildcards=0
     )
     # 4箇所以外を揃える
-    path = solve_greed_52(initial_state, goal_state, True)
+    if named:
+        initial_state_mod = []
+        for a in initial_state:
+            if a in goal_state[0:12]:
+                initial_state_mod.append("A")
+            elif a in goal_state[12:24]:
+                initial_state_mod.append("B")
+            elif a in goal_state[24:36]:
+                initial_state_mod.append("C")
+            elif a in goal_state[36:48]:
+                initial_state_mod.append("D")
+            elif a in goal_state[48:60]:
+                initial_state_mod.append("E")
+            else:
+                initial_state_mod.append("F")
+        goal_state_mod = ["A"] * 12 + ["B"] * 12 + ["C"] * 12 + ["D"] * 12 + ["E"] * 12 + ["F"] * 12
+        print(initial_state_mod)
+        print(goal_state_mod)
+        path = solve_greed_52(initial_state_mod, goal_state_mod, True)
+    else:
+        path = solve_greed_52(initial_state, goal_state, True)
+
     for m in path:
         q5.operate(m)
     # print(q5.state)
@@ -65,7 +86,28 @@ def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str]
         initial_state_pick.append(q5.state[n * n * j + 21])
         initial_state_pick.append(q5.state[n * n * j + 22])
         initial_state_pick.append(q5.state[n * n * j + 23])
-    path = solve_greed_52(initial_state_pick, goal_state, False)
+
+    if named:
+        initial_state_pick_mod = []
+        for a in initial_state_pick:
+            if a in goal_state[0:12]:
+                initial_state_pick_mod.append("A")
+            elif a in goal_state[12:24]:
+                initial_state_pick_mod.append("B")
+            elif a in goal_state[24:36]:
+                initial_state_pick_mod.append("C")
+            elif a in goal_state[36:48]:
+                initial_state_pick_mod.append("D")
+            elif a in goal_state[48:60]:
+                initial_state_pick_mod.append("E")
+            else:
+                initial_state_pick_mod.append("F")
+
+        goal_state_mod = ["A"] * 12 + ["B"] * 12 + ["C"] * 12 + ["D"] * 12 + ["E"] * 12 + ["F"] * 12
+        path = solve_greed_52(initial_state_pick_mod, goal_state_mod, False)
+    else:
+        path = solve_greed_52(initial_state_pick, goal_state, False)
+
     for m in path:
         q5.operate(m)
 
@@ -86,8 +128,26 @@ def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str]
         initial_state_pick.append(q5.state[n * n * j + 21])
         initial_state_pick.append(q5.state[n * n * j + 22])
         initial_state_pick.append(q5.state[n * n * j + 23])
+    if named:
+        initial_state_pick_mod = []
+        for a in initial_state_pick:
+            if a in goal_state[0:12]:
+                initial_state_pick_mod.append("A")
+            elif a in goal_state[12:24]:
+                initial_state_pick_mod.append("B")
+            elif a in goal_state[24:36]:
+                initial_state_pick_mod.append("C")
+            elif a in goal_state[36:48]:
+                initial_state_pick_mod.append("D")
+            elif a in goal_state[48:60]:
+                initial_state_pick_mod.append("E")
+            else:
+                initial_state_pick_mod.append("F")
 
-    path = solve_greed_5x(initial_state_pick, goal_state)
+        goal_state_mod = ["A"] * 12 + ["B"] * 12 + ["C"] * 12 + ["D"] * 12 + ["E"] * 12 + ["F"] * 12
+        path = solve_greed_5x(initial_state_pick_mod, goal_state_mod)
+    else:
+        path = solve_greed_5x(initial_state_pick, goal_state)
     for m in path:
         q5.operate(m)
     print(q5.state)

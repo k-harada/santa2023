@@ -145,20 +145,21 @@ arr_dict, command_dict = compress_magic()
 if __name__ == "__main__":
     print(len(arr_dict.keys()))
     for _k in arr_dict.keys():
-        _n = 6
-        _p6 = Puzzle(
+        _n = 33
+        _p33 = Puzzle(
             puzzle_id=_n * 10101, puzzle_type=f"cube_{_n}/{_n}/{_n}",
             solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
             num_wildcards=0
         )
         _path = command_dict[_k]
-        _pe = Permutation(_n * _n * 6)
+        _pe = Permutation(_n * _n * 33)
         for _m in _path:
             if _m[0] == "-":
-                _pe = (_p6.allowed_moves[_m[1:]] ** (-1)) * _pe
+                _pe = (_p33.allowed_moves[_m[1:]] ** (-1)) * _pe
             else:
-                _pe = _p6.allowed_moves[_m] * _pe
+                _pe = _p33.allowed_moves[_m] * _pe
+        print(_pe)
         print(pick_inner_51(_pe, _n, 1))
-        print(_k, arr_dict[_k])
+        print(_k, len(command_dict[_k]), arr_dict[_k])
     print(list(sorted(arr_dict.keys())))
 

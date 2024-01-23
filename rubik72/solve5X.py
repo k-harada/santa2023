@@ -193,4 +193,11 @@ if __name__ == "__main__":
         _goal_state.append(_goal_state_all[_n * _n * _j + 21])
         _goal_state.append(_goal_state_all[_n * _n * _j + 22])
         _goal_state.append(_goal_state_all[_n * _n * _j + 23])
+    # print(solve_greed_5x(_initial_state, _goal_state))
+    _initial_state = ["N2", "N1", "N0"] + [
+        f"N{i}" for i in range(3, 9)
+    ] + ["N11", "N10", "N9"] + ["N14", "N13", "N12"] + [
+        f"N{i}" for i in range(15, 36)
+    ] + ["N38", "N37", "N36"] + [f"N{i}" for i in range(39, 72)]
+    _goal_state = [f"N{i}" for i in range(72)]
     print(solve_greed_5x(_initial_state, _goal_state))
