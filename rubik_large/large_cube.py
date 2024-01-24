@@ -6,6 +6,8 @@ from puzzle import Puzzle
 import subprocess
 import datetime
 from subprocess import PIPE
+from rubik24.solve51 import solve_greed_51
+from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
 from rubik24.solve61 import solve_greed_61
 
 os.chdir("../rubiks-cube-NxNxN-solver")
@@ -100,6 +102,8 @@ class RubiksCubeLarge:
         self.m5 = move_translation(5)
         self.count_solver_5 = 0
         self.count_start = 0
+        self.count_41 = 0
+        self.count_51 = 0
         self.count_61 = 0
         self.sub_cubes = None
 
@@ -319,60 +323,36 @@ class RubiksCubeLarge:
             goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
-    def get_subset_edge(self, i: int, j: int, with_center: bool = False):
-        n = self.n
-        m = (n - 1) // 2
-        assert j < m
-        assert i == 0
-        current_state_sub = []
-        goal_state_sub = []
-        for z in range(6):
-            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
-            if with_center:
-                current_state_sub.append(self.cube.state[z * n * n + i * n + m])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + m])
-            current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
-
-            current_state_sub.append(self.cube.state[z * n * n + j * n + i])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
-            current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
-
-            if with_center:
-                current_state_sub.append(self.cube.state[z * n * n + m * n + i])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + i])
-                current_state_sub.append(self.cube.state[z * n * n + m * n + (n - 1 - i)])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + (n - 1 - i)])
-
-            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
-            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
-
-            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
-            if with_center:
-                current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + m])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + m])
-            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
-
-        return current_state_sub, goal_state_sub
-
     def run_subset(self, i: int, j: int):
         n = self.n
+        m = (n - 1) // 2
         assert max(i, j) <= n - 1 - max(i, j)
         assert i < n - 1 - i
         current_state_sub, goal_state_sub = self.get_subset(i, j)
         print(current_state_sub)
-        path = solve_greed_61(current_state_sub, goal_state_sub)
-        path = translate_61(path, n, i, j)
-        print(path)
-        for m in path:
-            self.cube.operate(m)
-            self.count_61 += 1
+        if i == j:
+            path = solve_greed_51_diag(current_state_sub, goal_state_sub)
+            path = translate_51(path, n, i)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+                self.count_41 += 1
+        elif j == m:
+            path = solve_greed_51(current_state_sub, goal_state_sub)
+            path = translate_51(path, n, i)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+                self.count_51 += 1
+        else:
+            path = solve_greed_61(current_state_sub, goal_state_sub)
+            path = translate_61(path, n, i, j)
+            print(path)
+            for m in path:
+                self.cube.operate(m)
+                self.count_61 += 1
+
+
         print(self.cube.state)
         return None
 
@@ -448,8 +428,26 @@ class RubiksCubeLarge:
         return None
 
 
+def translate_51(path, n, k):
+    assert k < n - 1 - k
+    mid = (n - 1) // 2
+    res_path = []
+    for m in path:
+        if m[-1] == "4":
+            res_path.append(m[:-1] + str(n - 1))
+        elif m[-1] == "3":
+            res_path.append(m[:-1] + str(n - 1 - k))
+        elif m[-1] == "2":
+            res_path.append(m[:-1] + str(mid))
+        elif m[-1] == "1":
+            res_path.append(m[:-1] + str(k))
+        else:
+            res_path.append(m)
+    return res_path
+
+
 def translate_61(path, n, i, j):
-    assert max(i, j) < n - 1 - max(i, j)
+    # assert max(i, j) < n - 1 - max(i, j)
     res_path = []
     for m in path:
         if m[-1] == "5":
@@ -520,10 +518,11 @@ if __name__ == "__main__":
         _q.solve()
         _id_list.append(_row["id"])
         _moves_list.append(".".join(_q.cube.move_history))
-        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_61, _q.count_start)
+        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start)
+        assert _q.cube.state == _q.cube.solution_state
     dt_now = datetime.datetime.now()
-    # pd.DataFrame(
-    #     {"id": _id_list, "moves": _moves_list}
-    # ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
+    pd.DataFrame(
+        {"id": _id_list, "moves": _moves_list}
+    ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
 
 

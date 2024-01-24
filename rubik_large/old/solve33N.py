@@ -295,7 +295,7 @@ def translate_61(path, n, i, j):
 if __name__ == "__main__":
     _n = 33
     assert _n % 2 == 1
-    puzzles_df = pd.read_csv("../input/puzzles.csv")
+    puzzles_df = pd.read_csv("../../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
     _q = None
     for _i, _row in puzzles_df_pick.iterrows():

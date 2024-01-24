@@ -10,7 +10,7 @@ puzzle_info_df = pd.read_csv(
 )
 
 
-def get_allowed_moves_24(puzzle_type: str):
+def get_allowed_moves_24(puzzle_type: str, diag: bool = False):
     assert puzzle_type in ["cube_4/4/4", "cube_5/5/5", "cube_6/6/6"]
     if puzzle_type == "cube_4/4/4":
         n = 4
@@ -23,11 +23,18 @@ def get_allowed_moves_24(puzzle_type: str):
     elif puzzle_type == "cube_5/5/5":
         n = 5
         pick_index = []
-        for i in range(6):
-            pick_index.append(7 + i * 25)
-            pick_index.append(11 + i * 25)
-            pick_index.append(13 + i * 25)
-            pick_index.append(17 + i * 25)
+        if not diag:
+            for i in range(6):
+                pick_index.append(7 + i * 25)
+                pick_index.append(11 + i * 25)
+                pick_index.append(13 + i * 25)
+                pick_index.append(17 + i * 25)
+        else:
+            for i in range(6):
+                pick_index.append(6 + i * 25)
+                pick_index.append(8 + i * 25)
+                pick_index.append(16 + i * 25)
+                pick_index.append(18 + i * 25)
     else:
         n = 6
         pick_index = []
@@ -55,4 +62,5 @@ def get_allowed_moves_24(puzzle_type: str):
 if __name__ == "__main__":
     print(get_allowed_moves_24("cube_4/4/4"))
     print(get_allowed_moves_24("cube_5/5/5"))
+    print(get_allowed_moves_24("cube_5/5/5", True))
     print(get_allowed_moves_24("cube_6/6/6"))

@@ -1,15 +1,7 @@
-import numpy as np
 import pandas as pd
-from typing import List
-from puzzle import Puzzle
 import kociemba
-from rubik24.solve41 import solve_greed_41
-from rubik24.solve51 import solve_greed_51
-from rubik24.solve61 import solve_greed_61
 
-from rubik3.align_center_deges import solve_bruce_12
-from rubik72.solve72 import align_pair_edges_with_center
-from solve_n33.solve33N import RubiksCubeLarge
+from rubik_large.old.solve33N import RubiksCubeLarge
 
 
 def kociemba_to_kaggle(s, n):
@@ -41,7 +33,7 @@ v_map = {"A": "U", "B": "F", "C": "R", "D": "B", "E": "L", "F": "D"}
 if __name__ == "__main__":
     _n = 33
     assert _n % 2 == 1
-    puzzles_df = pd.read_csv("../input/puzzles.csv")
+    puzzles_df = pd.read_csv("../../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[puzzles_df["puzzle_type"] == f"cube_{_n}/{_n}/{_n}"]
     _q = None
     for _i, _row in puzzles_df_pick.iterrows():
