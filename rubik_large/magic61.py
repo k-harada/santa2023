@@ -73,14 +73,14 @@ if __name__ == "__main__":
         solution_state=[str(_i) for _i in range(_n * _n * 6)], initial_state=[str(_i) for _i in range(_n * _n * 6)],
         num_wildcards=0
     )
-    # _path = magic61([2], 3, _n, "d", "r")  # (50 92 56)
-    # _path = magic61([1], 3, _n, "d", "r")  # (49 98 62)
+    # _path = magic612([2], 3, _n, "d", "r")  # (50 92 56)
+    # _path = magic612([1], 3, _n, "d", "r")  # (49 98 62)
     _path = magic61([1, 2], 3, _n, "d", "r")  # (49 98 62)(50 92 56)
-    # _path = magic61([4], 3, _n, "d", "r")  # (44 52 80)
-    # _path = magic61([-4], 3, _n, "d", "r")  # (52 80 116)
-    # _path = magic61([-1], 3, _n, "d", "r")  # (49 98 134)
-    # _path = magic61([-2], 3, _n, "d", "r")  # (50 92 128)
-    # _path = magic61([1, -2, 4], 3, _n, "d", "r")  # (50 92 128)
+    # _path = magic612([4], 3, _n, "d", "r")  # (44 52 80)
+    # _path = magic612([-4], 3, _n, "d", "r")  # (52 80 116)
+    # _path = magic612([-1], 3, _n, "d", "r")  # (49 98 134)
+    # _path = magic612([-2], 3, _n, "d", "r")  # (50 92 128)
+    # _path = magic612([1, -2, 4], 3, _n, "d", "r")  # (50 92 128)
 
     print(_path)
 

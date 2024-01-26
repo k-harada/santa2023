@@ -41,6 +41,14 @@ if __name__ == "__main__":
         print(len(_p.cube.move_history))
         for _m in _p.cube.move_history:
             _q.cube.operate(_m)
+        # pd.DataFrame(
+        #     {"id": [283], "moves": [".".join(_q.cube.move_history)]}
+        # ).to_csv(f"../output/large-283_bone.csv", index=False)
+
+        # pd.DataFrame({
+        #     "id": [283], "puzzle_type": ["cube_33/33/33"], "solution_state": [";".join(_q.cube.solution_state)],
+        #     "initial_state": [";".join(_q.cube.state)], "num_wildcards": [_row["num_wildcards"]]
+        # }).to_csv(f"../output/large-283_step2_problems.csv", index=False)
 
         # _q.print_face(0, 0)
         # _q.print_face(1, 0)
@@ -61,7 +69,7 @@ if __name__ == "__main__":
     _q.print_face(4, 0)
     _q.print_face(5, 0)
     print(len(_q.cube.move_history))
-    print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_51, _q.count_61, _q.count_start)
+    print(_q.cube.puzzle_id, _p.count_solver_5, _q.count_41, _q.count_51, _q.count_61, _p.count_start)
     for _i, (_x, _y) in enumerate(zip(_q.cube.state, _q.cube.solution_state)):
         if _x != _y:
             print(_i, _x, _y)

@@ -141,6 +141,29 @@ class MultiCube:
         # print(score, len(magic))
         return score, magic
 
+    def random_magic_large(self):
+        n = self.n
+        d12 = np.random.choice(6)
+        if d12 == 0:
+            d1, d2 = "r", "d"
+        elif d12 == 1:
+            d1, d2 = "r", "f"
+        elif d12 == 2:
+            d1, d2 = "d", "f"
+        elif d12 == 3:
+            d1, d2 = "d", "r"
+        elif d12 == 4:
+            d1, d2 = "f", "d"
+        else:
+            d1, d2 = "f", "r"
+        flag_int = np.random.choice(4)
+        rev = np.random.choice([True, False])
+        diag = np.random.choice([True, False])
+        add = np.random.choice(4)
+        self.try_magic_large(d1, d2, flag_int, rev=rev, diag=diag, add=add)
+        # print(score, len(magic))
+        return None
+
     def try_magic(self, j: int, d1: str, d2: str, flag_int: int = 0, rev: bool = False, diag: bool = False, add: int = 0):
         n = self.n
         m = (n - 1) // 2
@@ -189,6 +212,43 @@ class MultiCube:
             return 0, []
         return sum(v_list), magic61(k_list=k_list, m=j, n=n, d1=d1, d2=d2, flag_int=flag_int, rev=rev, diag=diag, add=add, rev_i=False)
 
+    def try_magic_large(self, d1: str, d2: str, flag_int: int = 0, rev: bool = False, diag: bool = False, add: int = 0):
+        n = self.n
+        m = (n - 1) // 2
+        self.eval_score()
+        base_score = sum([sum(self.score_list[ii]) for ii in range(m)])
+        res_list_1 = [[0] * (n - 1) for _ in range(n - 1)]
+        res_list_2 = [[0] * (n - 1) for _ in range(n - 1)]
+        for i in range(1, n - 1):
+            for j in range(1, n - 1):
+                if i == j or i + j == n - 1:
+                    continue
+                try_magic = magic61(k_list=[i], m=j, n=n, d1=d1, d2=d2, flag_int=flag_int, rev=rev, diag=diag, add=add, rev_i=False)
+                # print(try_magic)
+                for move in try_magic:
+                    self.operate(move)
+                self.eval_score()
+                new_score = sum([sum(self.score_list[ii]) for ii in range(m)])
+                for _ in try_magic:
+                    self.undo()
+                res_list_1[i][j] = base_score - new_score
+
+        for i in range(1, n - 1):
+            for j in range(1, n - 1):
+                if i == j or i + j == n - 1:
+                    continue
+                try_magic = magic61(k_list=[i], m=j, n=n, d1=d1, d2=d2, flag_int=flag_int, rev=rev, diag=diag, add=add, rev_i=True)
+                # print(try_magic)
+                for move in try_magic:
+                    self.operate(move)
+                self.eval_score()
+                new_score = sum([sum(self.score_list[ii]) for ii in range(m)])
+                for _ in try_magic:
+                    self.undo()
+                res_list_2[i][j] = base_score - new_score
+        print(res_list_1)
+        print(res_list_2)
+        return None
 
 back = {
     "A": "F", "B": "A", "C": "B", "D": "C", "E": "D", "F": "E"
@@ -198,7 +258,7 @@ back = {
 if __name__ == "__main__":
 
     puzzles_df = pd.read_csv("../input/puzzles.csv")
-    puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 283)]
+    puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 281) & (puzzles_df["id"] < 283)]
 
     _id_list = []
     _moves_list = []
@@ -248,7 +308,13 @@ if __name__ == "__main__":
         _q.get_sub_cubes()
         mc = MultiCube(_q.sub_cubes)
         print(sum([sum(_s) for _s in mc.score_list]))
-        res = mc.loop_random(1000, 2.5)
+
+        # for _ in range(100):
+        #     mc.random_magic_large()
+        #     print("---")
+        # continue
+
+        res = mc.loop_random(10000, 2.5)
         print(res)
         res = mc.loop_random(1000, 3.0)
         print(res)
@@ -259,11 +325,14 @@ if __name__ == "__main__":
         _q.solve_inner_face()
         print(_row["id"], len(_q.cube.move_history))
         _id_list.append(_row["id"])
-        _moves_list.append(".".join(_q.cube.move_history + mc.move_history))
+        _moves_list.append(".".join(_q.cube.move_history))
 
     dt_now = datetime.now()
     pd.DataFrame(
         {"id": _id_list, "moves": _moves_list}
     ).to_csv(f"../output/parallel_temp_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
-
+# 281 2559 0 23634 2 26195
+# 4217
+# (2629, 5872)
+# 281 17837
 

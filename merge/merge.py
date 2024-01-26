@@ -4,6 +4,7 @@ import datetime
 new_list = [
     "../output/large-267-282_2024-01-24-13:19.csv",
     "../output/large-283_2024-01-24-13:51.csv",
+    "../output/cube_5n_2024-01-24-20:01.csv"
 ]
 
 sample_df = pd.read_csv("../submissions/submission_261742.csv")
