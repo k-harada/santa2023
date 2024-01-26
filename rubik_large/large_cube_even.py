@@ -5,14 +5,15 @@ from typing import List
 from puzzle import Puzzle
 import subprocess
 import datetime
+from itertools import permutations
 from subprocess import PIPE
 from rubik24.solve51 import solve_greed_51
 from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
-from rubik24.solve61 import solve_greed_61
+from magic612.solve61 import solve_greed_61
+from rubik72.solve72 import align_pair_edges_with_center
+
 
 os.chdir("../rubiks-cube-NxNxN-solver")
-
-# 天才解法は見つからない
 
 
 # for normal colored large cube
@@ -299,58 +300,47 @@ class RubiksCubeLarge:
 
         return None
 
-
-    def use_solver_fake_3x3(self):
+    def get_subset_edge(self, i: int, j: int, with_center: bool = False):
         n = self.n
-        k = 3
-        m = n // 2 - 1
-        pick_list = [0, m, n - 1]
+        m = (n - 1) // 2
+        assert j < m
+        assert i == 0
         current_state_sub = []
+        goal_state_sub = []
         for z in range(6):
-            for i in pick_list:
-                for j in pick_list:
-                    current_state_sub.append(self.cube.state[z * n * n + i * n + j])
-        # transform
-        nn = k * k
-        res_list = []
-        res_list = res_list + current_state_sub[:nn]
-        res_list = res_list + current_state_sub[2 * nn:3 * nn]
-        res_list = res_list + current_state_sub[nn:2 * nn]
-        res_list = res_list + current_state_sub[5 * nn:]
-        res_list = res_list + current_state_sub[4 * nn:5 * nn]
-        res_list = res_list + current_state_sub[3 * nn:4 * nn]
+            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + i * n + m])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + m])
+            current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
 
-        solver_input = "".join([v_map[r] for r in res_list])
-        print(solver_input)
+            current_state_sub.append(self.cube.state[z * n * n + j * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
 
-        proc = subprocess.run(
-            f"./rubiks-cube-solver.py --state {solver_input}",
-            shell=True, stdout=PIPE, stderr=PIPE, text=True
-        )
-        # print(proc.stdout)
-        if ":" in proc.stdout:
-            # success
-            print("success 0")
-            action_list_solver = proc.stdout.split(": ")[1].split()
-            action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
-            for action in action_list_dot.split("."):
-                if action == "":
-                    continue
-                # print(action)
-                if action[-1] == "2":
-                    action_ = action[:-1] + str(n - 1)
-                elif action[-1] == "1":
-                    action_ = action[:-1] + str(m)
-                elif action[-1] == "0":
-                    action_ = action[:-1] + str(0)
-                else:
-                    action_ = action
-                    print(action)
-                self.cube.operate(action_)
-                self.count_solver_5 += 1
-            return None
-        print("failure")
-        return None
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + m * n + i])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + i])
+                current_state_sub.append(self.cube.state[z * n * n + m * n + (n - 1 - i)])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + m * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
+            if with_center:
+                current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + m])
+                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + m])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+
+        return current_state_sub, goal_state_sub
 
     def use_solver_fake_5x5_corner(self, ii: int, final: bool = False):
         n = self.n
@@ -362,7 +352,13 @@ class RubiksCubeLarge:
         for z in range(6):
             for i in pick_list:
                 for j in pick_list:
-                    current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+                    if i == m and j in [ii, n - 1 - ii]:
+                        current_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+                    elif i in [ii, n - 1 - ii] and j == m:
+                        current_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+                    else:
+                        current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+
         # transform
         nn = k * k
         res_list = []
@@ -374,16 +370,15 @@ class RubiksCubeLarge:
         res_list = res_list + current_state_sub[3 * nn:4 * nn]
 
         solver_input = "".join([v_map[r] for r in res_list])
-        print(solver_input)
+        # print(solver_input)
 
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
-        # print(proc.stdout)
+        # success
         if ":" in proc.stdout:
-            # success
-            print("success 0")
+            # print("success")
             action_list_solver = proc.stdout.split(": ")[1].split()
             action_list_dot = ".".join([self.m5[move] for move in action_list_solver])
             for action in action_list_dot.split("."):
@@ -409,67 +404,13 @@ class RubiksCubeLarge:
                     if self._check_almost_done(ii):
                         break
             return None
-        edges = [
-            (101, 5), (103, 15), (1, 128), (3, 126), (9, 28), (19, 26), (21, 51), (23, 53),
-            (96, 148), (98, 146), (80, 123), (90, 121), (84, 46), (94, 48), (71, 76), (73, 78),
-            (109, 55), (119, 65), (59, 30), (69, 40), (34, 130), (44, 140), (134, 105), (144, 115),
-        ]
-        edges_center = [
-            (102, 10), (2, 127), (14, 27), (22, 52), (97, 147), (85, 122), (89, 47), (72, 77),
-            (114, 60), (64, 35), (39, 135), (139, 110),
-        ]
-        centers = [12, 37, 62, 87, 112, 137]
-        # fake problem
-        # type 1
-        res_list_fake = res_list.copy()
-        for i, j in edges:
-            check_str = res_list[i] + res_list[j]
-            if check_str in ["AB", "BA"]:
-                print(i, j, check_str)
-                res_list_fake[i], res_list_fake[j] = res_list_fake[j], res_list_fake[i]
-        # res_list_fake[12], res_list_fake[37] = res_list_fake[37], res_list_fake[12]
-        solver_input = "".join([v_map[r] for r in res_list_fake])
-        print(solver_input)
-        proc = subprocess.run(
-            f"./rubiks-cube-solver.py --state {solver_input}",
-            shell=True, stdout=PIPE, stderr=PIPE, text=True
-        )
-
-        # print(proc.stdout)
-        if ":" in proc.stdout:
-            print("success 1")
-            action_list_solver = proc.stdout.split(": ")[1].split()
-            action_list_dot = ".".join([self.m5[move] for move in action_list_solver])
-            for action in action_list_dot.split("."):
-                if action == "":
-                    continue
-                # print(action)
-                if action[-1] == "4":
-                    action_ = action[:-1] + str(n - 1)
-                elif action[-1] == "3":
-                    action_ = action[:-1] + str(n - 1 - ii)
-                elif action[-1] == "2":
-                    action_ = action[:-1] + str(m)
-                elif action[-1] == "1":
-                    action_ = action[:-1] + str(ii)
-                elif action[-1] == "0":
-                    action_ = action[:-1] + str(0)
-                else:
-                    action_ = action
-                    print(action)
-                self.cube.operate(action_)
-                self.count_solver_5 += 1
-                if not final:
-                    if self._check_almost_done(ii):
-                        break
-            return None
-        print("fail")
+        print("failure")
         return None
 
     def get_subset(self, i: int, j: int):
         n = self.n
-        assert max(i, j) <= (n - 1) // 2
-        assert i < (n - 1) // 2
+        # assert max(i, j) <= (n - 1) // 2
+        # assert i < (n - 1) // 2
         current_state_sub = []
         goal_state_sub = []
         for z in range(6):
@@ -493,8 +434,8 @@ class RubiksCubeLarge:
     def run_subset(self, i: int, j: int):
         n = self.n
         m = (n - 1) // 2
-        assert max(i, j) <= n - 1 - max(i, j)
-        assert i < n - 1 - i
+        # assert max(i, j) <= n - 1 - max(i, j)
+        # assert i < n - 1 - i
         current_state_sub, goal_state_sub = self.get_subset(i, j)
         print(current_state_sub)
         if i == j:
@@ -504,13 +445,6 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
                 self.count_41 += 1
-        elif j == m:
-            path = solve_greed_51(current_state_sub, goal_state_sub)
-            path = translate_51(path, n, i)
-            print(path)
-            for m in path:
-                self.cube.operate(m)
-                self.count_51 += 1
         else:
             path = solve_greed_61(current_state_sub, goal_state_sub)
             path = translate_61(path, n, i, j)
@@ -563,22 +497,11 @@ class RubiksCubeLarge:
                 self.sub_cubes[i].append(sub_cube)
         return None
 
-    def solve_bone(self):
-        n = self.n
-        m = (n - 1) // 2
-        for i in range(m - 1, 0, -1):
-            print(f"Solving Edge: {i}")
-            if i > 1:
-                self.use_solver_5x5_corner(i, final=False)
-            else:
-                self.use_solver_5x5_corner(i, final=True)
-        return None
-
     def solve_inner_face(self):
         n = self.n
         m = (n - 1) // 2
-        for i in range(1, m):
-            for j in range(1, m):
+        for i in range(1, m + 1):
+            for j in range(1, m + 1):
                 if i != j:
                     self.run_subset(i, j)
         for c in range(6):
@@ -639,12 +562,18 @@ back = {
 
 if __name__ == "__main__":
     puzzles_df = pd.read_csv("../input/puzzles.csv")
-    puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 272) & (puzzles_df["id"] < 277)]
     _q = None
     _id_list = []
     _moves_list = []
-    for _i, _row in puzzles_df_pick.iterrows():
-        _n = 10
+    for _i, _row in puzzles_df.iterrows():
+        if _row["puzzle_type"] == "cube_6/6/6":
+            _n = 6
+        elif _row["puzzle_type"] == "cube_8/8/8":
+            _n = 8
+        elif _row["puzzle_type"] == "cube_10/10/10":
+            _n = 10
+        else:
+            continue
         _m = (_n - 1) // 2
         _q = RubiksCubeLarge(
             puzzle_id=_row["id"], size=_n,
@@ -652,24 +581,24 @@ if __name__ == "__main__":
             initial_state=list(_row["initial_state"].split(";")),
             num_wildcards=_row["num_wildcards"]
         )
+        if _q.cube.solution_state[1] != "A":
+            continue
 
-        _q.use_solver_4x4(4)
-        _q.use_solver_4x4(3)
-        # _q.use_solver_4x4(2)
-        # _q.use_solver_4x4(1)
-        # _q.use_solver_fake_3x3()
-        _q.use_solver_fake_5x5_corner(3, final=False)
-        _q.use_solver_fake_5x5_corner(2, final=False)
+        _q.use_solver_4x4(_m)
+        for j in range(_m - 1, 1, -1):
+            _q.use_solver_fake_5x5_corner(j, final=False)
         _q.use_solver_fake_5x5_corner(1, final=True)
-        print(_row["id"])
-        for _c in range(6):
-            print("---")
-            _q.print_face(_c, 0)
-        print("---")
-        print(len(_q.cube.move_history))
-    # dt_now = datetime.datetime.now()
-    # pd.DataFrame(
-    #     {"id": _id_list, "moves": _moves_list}
-    # ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
 
+        # print(_row["id"], len(_q.cube.move_history))
 
+        _q.solve_inner_face()
+        assert _q.cube.state == _q.cube.solution_state
+        print(_row["id"], len(_q.cube.move_history))
+        _id_list.append(_row["id"])
+        _moves_list.append(".".join(_q.cube.move_history))
+        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start)
+
+    dt_now = datetime.datetime.now()
+    pd.DataFrame(
+        {"id": _id_list, "moves": _moves_list}
+    ).to_csv(f"../output/cube_6_8_10_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)

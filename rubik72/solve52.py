@@ -106,13 +106,15 @@ def solve_greed_52(initial_state: List[str], goal_state: List[str], two_side: bo
         current_state = np.array(list(_current_state.split("_")))
         # print(_current_state)
         h_now = heuristic(current_state, goal_state_arr, two_side)
-        if np.random.uniform() < 0.001:
+        if np.random.uniform() < 0.01:
             print(len(closed_set_left), len(closed_set_right))
             print(h_now)
             print(_current_state)
 
         if h_now <= 1200:
-            # print(h_now)
+            print(len(closed_set_left), len(closed_set_right))
+            print(h_now)
+            print(_current_state)
             return path
 
         if _current_state == _goal_state:

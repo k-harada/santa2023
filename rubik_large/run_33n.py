@@ -79,6 +79,6 @@ if __name__ == "__main__":
     dt_now = datetime.datetime.now()
     pd.DataFrame(
         {"id": _id_list, "moves": _moves_list}
-    ).to_csv(f"../output/large-283_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
+    ).to_csv(f"../output/large-283_{len(_q.cube.move_history)}.csv", index=False)
 
 

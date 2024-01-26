@@ -110,9 +110,10 @@ def align_pair_edges_with_center(initial_state: List[str], goal_state: List[str]
 
     for m in path:
         q5.operate(m)
-
+    print("--------------")
     print(q5.state)
     print(q5.solution_state)
+    print("--------------")
 
     initial_state_pick = []
     for j in range(6):
