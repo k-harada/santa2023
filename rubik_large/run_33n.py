@@ -7,6 +7,34 @@ from rubik_large.large_cube import RubiksCubeLarge
 c_list = ["A", "B", "C", "D", "E", "F"]
 
 
+def parse_magic(path):
+    count_dict = dict()
+    cnt_nonzero = 0
+    parsed_path = [[]]
+    for mv in path:
+        if mv[0] != "-":
+            mv_ = mv
+            v = 1
+        else:
+            mv_ = mv[1:]
+            v = -1
+
+        if mv_ not in count_dict.keys():
+            count_dict[mv_] = v
+            cnt_nonzero += 1
+        else:
+            if count_dict[mv_] == 0:
+                cnt_nonzero += 1
+            count_dict[mv_] += v
+            if count_dict[mv_] == 0:
+                cnt_nonzero -= 1
+        # print(mv, mv_, cnt_nonzero)
+        parsed_path[-1].append(mv)
+        if cnt_nonzero == 0:
+            parsed_path.append([])
+    return parsed_path[:-1]
+
+
 if __name__ == "__main__":
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[(puzzles_df["id"] == 283)]
@@ -50,18 +78,19 @@ if __name__ == "__main__":
         #     "initial_state": [";".join(_q.cube.state)], "num_wildcards": [_row["num_wildcards"]]
         # }).to_csv(f"../output/large-283_step2_problems.csv", index=False)
 
-        # _q.print_face(0, 0)
-        # _q.print_face(1, 0)
-        # _q.print_face(2, 0)
-        # _q.print_face(3, 0)
-        # _q.print_face(4, 0)
-        # _q.print_face(5, 0)
-
     _m = (_n - 1) // 2
+    _path_list = [[] for _ in range(200)]
     for _i in range(1, _m):
         for _j in range(1, _m + 1):
-            _q.run_subset(_i, _j)
-
+            _path = _q.run_subset(_i, _j, only_path=True)
+            # print(_path)
+            _parsed_path = parse_magic(_path)
+            # print(_parsed_path)
+            for _k, _path in enumerate(_parsed_path):
+                _path_list[_k] = _path_list[_k] + _path
+    for _path in _path_list:
+        for _mv in _path:
+            _q.cube.operate(_mv)
     _q.print_face(0, 0)
     _q.print_face(1, 0)
     _q.print_face(2, 0)
@@ -79,6 +108,6 @@ if __name__ == "__main__":
     dt_now = datetime.datetime.now()
     pd.DataFrame(
         {"id": _id_list, "moves": _moves_list}
-    ).to_csv(f"../output/large-283_{len(_q.cube.move_history)}.csv", index=False)
+    ).to_csv(f"../output/large-283_seq_{len(_q.cube.move_history)}.csv", index=False)
 
 

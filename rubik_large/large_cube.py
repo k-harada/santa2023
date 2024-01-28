@@ -101,6 +101,7 @@ class RubiksCubeLarge:
             num_wildcards=0
         )
         self.m5 = move_translation(5)
+        self.m3 = move_translation(3)
         self.count_solver_5 = 0
         self.count_start = 0
         self.count_41 = 0
@@ -268,36 +269,42 @@ class RubiksCubeLarge:
             goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
-    def run_subset(self, i: int, j: int):
+    def run_subset(self, i: int, j: int, only_path: bool = False):
         n = self.n
         m = (n - 1) // 2
         assert max(i, j) <= n - 1 - max(i, j)
         assert i < n - 1 - i
         current_state_sub, goal_state_sub = self.get_subset(i, j)
-        print(current_state_sub)
+        # print(current_state_sub)
         if i == j:
             path = solve_greed_51_diag(current_state_sub, goal_state_sub)
             path = translate_51(path, n, i)
-            print(path)
+            # print(path)
+            if only_path:
+                return path
             for m in path:
                 self.cube.operate(m)
                 self.count_41 += 1
         elif j == m:
             path = solve_greed_51(current_state_sub, goal_state_sub)
             path = translate_51(path, n, i)
-            print(path)
+            # print(path)
+            if only_path:
+                return path
             for m in path:
                 self.cube.operate(m)
                 self.count_51 += 1
         else:
             path = solve_greed_61(current_state_sub, goal_state_sub)
             path = translate_61(path, n, i, j)
-            print(path)
+            # print(path)
+            if only_path:
+                return path
             for m in path:
                 self.cube.operate(m)
                 self.count_61 += 1
 
-        print(self.cube.state)
+        # print(self.cube.state)
         return None
 
     def print_face(self, c: int, i: int):
@@ -340,15 +347,62 @@ class RubiksCubeLarge:
                 self.sub_cubes[i].append(sub_cube)
         return None
 
-    def solve_bone(self):
+    def solve_bone(self, no_last: bool = False):
         n = self.n
         m = (n - 1) // 2
         for i in range(m - 1, 0, -1):
             print(f"Solving Edge: {i}")
-            if i > 1:
+            if i > 1 or no_last:
                 self.use_solver_5x5_corner(i, final=False)
             else:
                 self.use_solver_5x5_corner(i, final=True)
+        return None
+
+    def solve_3x3(self):
+        n = self.n
+        k = 3
+        m = (n - 1) // 2
+        pick_list = [0, m, n - 1]
+        current_state_sub = []
+        for z in range(6):
+            for i in pick_list:
+                for j in pick_list:
+                    current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+        # transform
+        nn = k * k
+        res_list = []
+        res_list = res_list + current_state_sub[:nn]
+        res_list = res_list + current_state_sub[2 * nn:3 * nn]
+        res_list = res_list + current_state_sub[nn:2 * nn]
+        res_list = res_list + current_state_sub[5 * nn:]
+        res_list = res_list + current_state_sub[4 * nn:5 * nn]
+        res_list = res_list + current_state_sub[3 * nn:4 * nn]
+
+        solver_input = "".join([v_map[r] for r in res_list])
+        # print(solver_input)
+
+        proc = subprocess.run(
+            f"./rubiks-cube-solver.py --state {solver_input}",
+            shell=True, stdout=PIPE, stderr=PIPE, text=True
+        )
+        # print(proc.stdout)
+        action_list_solver = proc.stdout.split(": ")[1].split()
+        action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
+        for action in action_list_dot.split("."):
+            if action == "":
+                continue
+            # print(action)
+            if action[-1] == "2":
+                action_ = action[:-1] + str(n - 1)
+            elif action[-1] == "1":
+                action_ = action[:-1] + str(m)
+            elif action[-1] == "0":
+                action_ = action[:-1] + str(0)
+            else:
+                action_ = action
+                print(action)
+            self.cube.operate(action_)
+            self.count_solver_5 += 1
         return None
 
     def solve_inner_face(self):

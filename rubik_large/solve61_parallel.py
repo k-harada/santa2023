@@ -98,7 +98,7 @@ class MultiCube:
             if len(magic) > 0:
                 if len(magic) <= s * bar:
                     for move in magic:
-                        mc.operate(move)
+                        self.operate(move)
                     # print(s)
                     s_sum += s
                     len_sum += len(magic)
