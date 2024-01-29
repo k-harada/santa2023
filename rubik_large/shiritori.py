@@ -96,7 +96,15 @@ class Shiritori:
         d2 = d2 + str(n2)
         d3 = d3 + str(n3)
 
-        return magic3(n, d1, d2, d3, reverse=True)
+        double_int = 0
+        r = np.random.choice(3)
+        if r == 0:
+            double_int += 1
+        r = np.random.choice(3)
+        if r == 0:
+            double_int += 2
+
+        return magic3(n, d1, d2, d3, reverse=True, double_int=double_int)
 
     def next_magic_random(self, m: Magic3):
         n = self.n
@@ -111,16 +119,17 @@ class Shiritori:
             r = np.random.choice(2)
             if r == 1:
                 d3 = "-" + d3
-            if m.flag2 == 1:
-                v2 = int(m.m2[1:])
-            else:
-                v2 = int(m.m2[2:])
-            while True:
-                v = np.random.choice(range(1, n - 1))
-                if v != v2:
-                    d3 = d3 + str(v)
-                    break
-            new_magic = magic3(n, m.m1, m.m2, d3, reverse=True)
+            v = np.random.choice(range(1, n - 1))
+            d3 = d3 + str(v)
+
+            double_int = 0
+            if m.double_int >= 2:
+                double_int += 2
+            r = np.random.choice(3)
+            if r == 0:
+                double_int += 1
+
+            new_magic = magic3(n, m.m1, m.m2, d3, reverse=True, double_int=double_int)
             return new_magic
         else:
             r = np.random.choice(2)
@@ -132,17 +141,17 @@ class Shiritori:
             r = np.random.choice(2)
             if r == 1:
                 d2 = "-" + d2
+            v = np.random.choice(range(1, n - 1))
+            d2 = d2 + str(v)
 
-            if m.flag3 == 1:
-                v3 = int(m.m3[1:])
-            else:
-                v3 = int(m.m3[2:])
-            while True:
-                v = np.random.choice(range(1, n - 1))
-                if v != v3:
-                    d2 = d2 + str(v)
-                    break
-            new_magic = magic3(n, m.m1, d2, m.m3, reverse=False)
+            double_int = 0
+            if m.double_int % 2 == 1:
+                double_int += 1
+            r = np.random.choice(3)
+            if r == 0:
+                double_int += 2
+
+            new_magic = magic3(n, m.m1, d2, m.m3, reverse=False, double_int=double_int)
             return new_magic
 
     def run_shiritori(self):

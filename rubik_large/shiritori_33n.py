@@ -238,7 +238,7 @@ if __name__ == "__main__":
     puzzles_df_pick = puzzles_df[(puzzles_df["id"] == 283)]
     _q = None
 
-    for _i, _row in puzzles_df_pick.iterrows():
+    for _ii, _row in puzzles_df_pick.iterrows():
         _n = 33
         _m = (_n - 1) // 2
         _q = RubiksCubeLarge(
@@ -271,7 +271,7 @@ if __name__ == "__main__":
 
         _s = Shiritori(_n, _q.cube)
         print(_s.score)
-        for _t in range(300):
+        for _t in range(500):
             print(_t)
             _s.run_shiritori()
 
@@ -279,7 +279,17 @@ if __name__ == "__main__":
         _path_list = [[] for _ in range(200)]
         for _i in range(1, _m):
             for _j in range(1, _m + 1):
+                if _i != _j and _j != _m:
+                    continue
                 _path = _q.run_subset(_i, _j, only_path=True)
+                # print(_path)
+                _parsed_path = parse_magic(_path)
+                # print(_parsed_path)
+                for _k, _path in enumerate(_parsed_path):
+                    _path_list[_k] = _path_list[_k] + _path
+        for _i in range(1, _m):
+            for _j in range(_i + 1, _m):
+                _path = _q.run_subset_2(_i, _j, only_path=True)
                 # print(_path)
                 _parsed_path = parse_magic(_path)
                 # print(_parsed_path)

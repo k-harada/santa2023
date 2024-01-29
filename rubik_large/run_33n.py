@@ -82,7 +82,17 @@ if __name__ == "__main__":
     _path_list = [[] for _ in range(200)]
     for _i in range(1, _m):
         for _j in range(1, _m + 1):
+            if _i != _j and _j != _m:
+                continue
             _path = _q.run_subset(_i, _j, only_path=True)
+            # print(_path)
+            _parsed_path = parse_magic(_path)
+            # print(_parsed_path)
+            for _k, _path in enumerate(_parsed_path):
+                _path_list[_k] = _path_list[_k] + _path
+    for _i in range(1, _m):
+        for _j in range(_i + 1, _m):
+            _path = _q.run_subset_2(_i, _j, only_path=True)
             # print(_path)
             _parsed_path = parse_magic(_path)
             # print(_parsed_path)

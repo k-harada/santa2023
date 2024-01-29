@@ -10,7 +10,43 @@ from rubik24.compress_magic61 import compress_magic as compress_magic_old
 arr_dict_old, command_dict_old = compress_magic_old()
 
 
-def magic3(n: int, m1: str, m2: str, m3: str, reverse: bool = False):
+def find_magic_number(n: int, magic: List[str]):
+    # rev of not
+    if magic[0][0] == "-":
+        v0 = int(magic[0][2:])
+    else:
+        v0 = int(magic[0][1:])
+    if v0 in [0, n - 1]:
+        double_int = 0
+        if magic[1] == magic[2]:
+            double_int += 1
+        if magic[-1] == magic[-2]:
+            double_int += 2
+        if double_int == 0:
+            return magic[0], magic[3], magic[1], False, double_int
+        elif double_int == 1:
+            return magic[0], magic[4], magic[1], False, double_int
+        elif double_int == 2:
+            return magic[0], magic[3], magic[1], False, double_int
+        else:
+            return magic[0], magic[4], magic[1], False, double_int
+    else:
+        double_int = 0
+        if magic[-2] == magic[-3]:
+            double_int += 1
+        if magic[0] == magic[1]:
+            double_int += 2
+        if double_int == 0:
+            return magic[1], magic[0], magic[2], True, double_int
+        elif double_int == 1:
+            return magic[1], magic[0], magic[2], True, double_int
+        elif double_int == 2:
+            return magic[2], magic[0], magic[3], True, double_int
+        else:
+            return magic[2], magic[0], magic[3], True, double_int
+
+
+def magic3(n: int, m1: str, m2: str, m3: str, reverse: bool = False, double_int: int = 0):
     if m1[0] == "-":
         m11 = m1[1:]
     else:
@@ -23,16 +59,32 @@ def magic3(n: int, m1: str, m2: str, m3: str, reverse: bool = False):
         m31 = m3[1:]
     else:
         m31 = "-" + m3
-    if not reverse:
-        res = [m1, m3, m11, m2, m1, m31, m11, m21]
+    if double_int == 1:
+        if not reverse:
+            res = [m1, m3, m3, m11, m2, m1, m31, m31, m11, m21]
+        else:
+            res = [m2, m1, m3, m3, m11, m21, m1, m31, m31, m11]
+    elif double_int == 2:
+        if not reverse:
+            res = [m1, m3, m11, m2, m2, m1, m31, m11, m21, m21]
+        else:
+            res = [m2, m2, m1, m3, m11, m21, m21, m1, m31, m11]
+    elif double_int == 2:
+        if not reverse:
+            res = [m1, m3, m3, m11, m2, m2, m1, m31, m31, m11, m21, m21]
+        else:
+            res = [m2, m2, m1, m3, m3, m11, m21, m21, m1, m31, m31, m11]
     else:
-        res = [m2, m1, m3, m11, m21, m1, m31, m11]
+        if not reverse:
+            res = [m1, m3, m11, m2, m1, m31, m11, m21]
+        else:
+            res = [m2, m1, m3, m11, m21, m1, m31, m11]
     return res
 
 
 class Magic3:
 
-    def __init__(self, n: int, m1: str, m2: str, m3: str, reverse: bool = False):
+    def __init__(self, n: int, m1: str, m2: str, m3: str, reverse: bool = False, double_int: int = 0):
         self.n = n
         if m1[0] == "-":
             m11 = m1[1:]
@@ -59,29 +111,38 @@ class Magic3:
             self.dim3 = m3[0]
             self.flag3 = 1
 
-        if not reverse:
-            res = [m1, m3, m11, m2, m1, m31, m11, m21]
+        if double_int == 1:
+            if not reverse:
+                res = [m1, m3, m3, m11, m2, m1, m31, m31, m11, m21]
+            else:
+                res = [m2, m1, m3, m3, m11, m21, m1, m31, m31, m11]
+        elif double_int == 2:
+            if not reverse:
+                res = [m1, m3, m11, m2, m2, m1, m31, m11, m21, m21]
+            else:
+                res = [m2, m2, m1, m3, m11, m21, m21, m1, m31, m11]
+        elif double_int == 3:
+            if not reverse:
+                res = [m1, m3, m3, m11, m2, m2, m1, m31, m31, m11, m21, m21]
+            else:
+                res = [m2, m2, m1, m3, m3, m11, m21, m21, m1, m31, m31, m11]
         else:
-            res = [m2, m1, m3, m11, m21, m1, m31, m11]
+            if not reverse:
+                res = [m1, m3, m11, m2, m1, m31, m11, m21]
+            else:
+                res = [m2, m1, m3, m11, m21, m1, m31, m11]
 
         self.m1 = m1
         self.m2 = m2
         self.m3 = m3
+        self.double_int = double_int
         self.rev = reverse
         self.command_list = res
 
 
 def magic_from_command(n: int, magic: List[str]):
-    # rev of not
-    if magic[0][0] == "-":
-        v0 = int(magic[0][2:])
-    else:
-        v0 = int(magic[0][1:])
-    if v0 in [0, n - 1]:
-        return Magic3(n, magic[0], magic[3], magic[1], reverse=False)
-    else:
-        return Magic3(n, magic[1], magic[0], magic[2], reverse=True)
-
+    m1, m2, m3, rev, double_int = find_magic_number(n, magic)
+    return Magic3(n, m1, m2, m3, rev, double_int)
 
 
 n = 6
@@ -139,36 +200,40 @@ def get_magic_dict():
                 if m3 in ["f0", "f5", "d0", "d5", "r0", "r5"]:
                     continue
 
-                for s in range(8):
-                    if s & 4 > 0:
-                        _m1 = "-" + m1
-                    else:
-                        _m1 = m1
-                    if s & 2 > 0:
-                        _m2 = "-" + m2
-                    else:
-                        _m2 = m2
-                    if s & 1 > 0:
-                        _m3 = "-" + m3
-                    else:
-                        _m3 = m3
-                    # print(_m1, _m2, _m3)
-                    _path = magic3(n, _m1, _m2, _m3, reverse=False)
-                    _k, _arr = check_magic(_path)
+                for db in range(4):
 
-                    if _k is not None:
-                        if _k not in path_dict.keys():
-                            path_dict[_k] = _path
-                            arr_dict[_k] = _arr
-                    # reverse
-                    _path = magic3(n, _m1, _m2, _m3, reverse=True)
-                    _k, _arr = check_magic(_path)
+                    for s in range(8):
+                        if s & 4 > 0:
+                            _m1 = "-" + m1
+                        else:
+                            _m1 = m1
+                        if s & 2 > 0:
+                            _m2 = "-" + m2
+                        else:
+                            _m2 = m2
+                        if s & 1 > 0:
+                            _m3 = "-" + m3
+                        else:
+                            _m3 = m3
+                        # print(_m1, _m2, _m3)
+                        _path = magic3(n, _m1, _m2, _m3, reverse=False, double_int=db)
+                        mag = magic_from_command(n, _path)
+                        assert mag.command_list == _path
+                        _k, _arr = check_magic(_path)
 
-                    if _k is not None:
-                        if _k not in path_dict.keys():
-                            path_dict[_k] = _path
-                            arr_dict[_k] = _arr
-    # print(len(path_dict.keys()))
+                        if _k is not None:
+                            if _k not in path_dict.keys():
+                                path_dict[_k] = _path
+                                arr_dict[_k] = _arr
+                        # reverse
+                        _path = magic3(n, _m1, _m2, _m3, reverse=True, double_int=db)
+                        _k, _arr = check_magic(_path)
+
+                        if _k is not None:
+                            if _k not in path_dict.keys():
+                                path_dict[_k] = _path
+                                arr_dict[_k] = _arr
+    # print(len(path_dict.keys()))  1345
 
     for _k in arr_dict_old.keys():
         _path = command_dict_old[_k]
@@ -176,7 +241,7 @@ def get_magic_dict():
         _kk, _arr = check_magic(_path)
         if _kk is not None:
             if _kk not in path_dict.keys():
-                print(_kk, _path)
+                # print(_kk, _path)
                 path_dict[_k] = _path
                 arr_dict[_k] = _arr
 

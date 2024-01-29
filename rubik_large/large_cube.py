@@ -9,6 +9,7 @@ from subprocess import PIPE
 from rubik24.solve51 import solve_greed_51
 from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
 from magic612.solve61 import solve_greed_61
+from magic622.solve62 import solve_greed_62
 
 
 os.chdir("../rubiks-cube-NxNxN-solver")
@@ -269,6 +270,32 @@ class RubiksCubeLarge:
             goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
+    def get_subset_48(self, i: int, j: int):
+        n = self.n
+        assert i < j < (n - 1) // 2
+        current_state_sub = []
+        goal_state_sub = []
+        for z in range(6):
+            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
+
+            current_state_sub.append(self.cube.state[z * n * n + j * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+        return current_state_sub, goal_state_sub
+
     def run_subset(self, i: int, j: int, only_path: bool = False):
         n = self.n
         m = (n - 1) // 2
@@ -303,6 +330,24 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
                 self.count_61 += 1
+
+        # print(self.cube.state)
+        return None
+
+    def run_subset_2(self, i: int, j: int, only_path: bool = False, allow_rot: bool = False):
+        n = self.n
+        m = (n - 1) // 2
+        assert i < j < m
+        current_state_sub, goal_state_sub = self.get_subset_48(i, j)
+        # print(current_state_sub)
+        path = solve_greed_62(current_state_sub, goal_state_sub, allow_rot=allow_rot)
+        path = translate_61(path, n, i, j)
+        # print(path)
+        if only_path:
+            return path
+        for m in path:
+            self.cube.operate(m)
+            self.count_61 += 1
 
         # print(self.cube.state)
         return None
@@ -409,9 +454,8 @@ class RubiksCubeLarge:
         n = self.n
         m = (n - 1) // 2
         for i in range(1, m):
-            for j in range(1, m):
-                if i != j:
-                    self.run_subset(i, j)
+            for j in range(i + 1, m):
+                self.run_subset_2(i, j, allow_rot=True)
         for c in range(6):
             self.print_face(c, 0)
         print(self.cube.puzzle_id)
@@ -423,6 +467,7 @@ class RubiksCubeLarge:
         print(self.cube.move_history)
         self.solve_bone()
         self.solve_inner_face()
+        self.solve_3x3()
         return None
 
 
