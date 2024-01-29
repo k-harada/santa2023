@@ -609,10 +609,8 @@ def solve(seed: int = 71):
             _n = 10
             continue
         elif _row["id"] < 281:
-            continue
             _n = 19
         else:
-            continue
             _n = 33
         _m = (_n - 1) // 2
         if _row["id"] != 282:
