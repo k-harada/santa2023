@@ -7,6 +7,8 @@ RUN pip install -r requirements.txt
 
 COPY puzzle.py puzzle.py
 COPY rubik24 rubik24
+COPY rubik48 rubik48
+COPY rubik72 rubik72
 COPY magic612 magic612
 COPY magic622 magic622
 COPY input input

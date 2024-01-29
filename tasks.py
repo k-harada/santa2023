@@ -48,4 +48,28 @@ def solve(ctx, seed: int = 42):
     client = bigquery.Client()
     table_id = "kaggle-playground.santa2023.cube"
     errors = client.insert_rows_json(table_id, rows_to_insert)
-    # import IPython; IPython.embed()
+
+
+@invoke.task
+def solve_even(ctx, seed: int = 42):
+    from rubik_large import large_cube_even
+
+    job_id = os.environ.get("CLOUD_RUN_EXECUTION") or os.environ.get("CLOUD_ML_JOB_ID")
+
+    id_list, moves_list = large_cube_even.solve(seed=seed)
+
+    # Insert the results to BigQuery.
+    rows_to_insert = [
+        {
+            "id": id_,
+            "seed": seed,
+            "length": len(moves.split(".")),
+            "moves": moves,
+            "timestamp": str(datetime.now(timezone.utc)),
+            "job_id": job_id or "local",
+        }
+        for id_, moves in zip(id_list, moves_list)
+    ]
+    client = bigquery.Client()
+    table_id = "kaggle-playground.santa2023.cube"
+    errors = client.insert_rows_json(table_id, rows_to_insert)

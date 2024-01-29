@@ -646,11 +646,10 @@ def solve(seed: int = 71):
         _moves_list.append(".".join(_q.cube.move_history))
         print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
         assert _q.cube.state == _q.cube.solution_state
-    dt_now = datetime.datetime.now()
 
     return _id_list, _moves_list
 
-    # import IPython; IPython.embed()
+    # dt_now = datetime.datetime.now()
     # pd.DataFrame(
     #     {"id": _id_list, "moves": _moves_list}
     # ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
