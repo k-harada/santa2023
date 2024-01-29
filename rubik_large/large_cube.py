@@ -456,16 +456,66 @@ class RubiksCubeLarge:
         for i in range(1, m):
             for j in range(i + 1, m):
                 self.run_subset_2(i, j, allow_rot=True)
-        for c in range(6):
-            self.print_face(c, 0)
-        print(self.cube.puzzle_id)
-        print(len(self.cube.move_history))
+        # for c in range(6):
+        #     self.print_face(c, 0)
+        # print(self.cube.puzzle_id)
+        # print(len(self.cube.move_history))
+        return None
+
+    def run_subset_2_once(self, i: int, j: int, allow_rot: bool = False):
+        n = self.n
+        m = (n - 1) // 2
+        assert i < j < m
+        current_state_sub, goal_state_sub = self.get_subset_48(i, j)
+        # print(current_state_sub)
+        last4 = translate_61_inv(self.cube.move_history[-4:], n, i, j)
+        gain, le_minus, best_path = solve_greed_62(
+            current_state_sub, goal_state_sub, allow_rot=allow_rot, one_move=True, last_actions=last4
+        )
+        best_path = translate_61(best_path, n, i, j)
+        # print(path)
+        return gain, le_minus, best_path
+
+    def solve_inner_face_greed(self):
+        n = self.n
+        m = (n - 1) // 2
+        efi_best = 1.0
+        while efi_best > 0:
+            efi_best = 0.0
+            g_best = 0
+            le_best = 0
+            path_best = []
+            for i in range(1, m):
+                for j in range(i + 1, m):
+                    g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
+                    efi = g / max(0.1, len(path) - le) + 0.05 * np.random.uniform()
+                    if efi > efi_best:
+                        le_best = le
+                        path_best = path
+                        g_best = g
+                        efi_best = efi
+            # print(g_best, len(path_best) - 2 * le_best)
+            for _ in range(le_best):
+                self.cube.undo()
+                self.count_61 -= 1
+            for mv in path_best[le_best:]:
+                self.cube.operate(mv)
+                self.count_61 += 1
+        return None
+
+    def solve_old(self):
+        self.align_center()
+        print(self.cube.move_history)
+        self.solve_bone()
+        self.solve_inner_face()
+        self.solve_3x3()
         return None
 
     def solve(self):
         self.align_center()
         print(self.cube.move_history)
         self.solve_bone()
+        self.solve_inner_face_greed()
         self.solve_inner_face()
         self.solve_3x3()
         return None
@@ -508,12 +558,45 @@ def translate_61(path, n, i, j):
     return res_path
 
 
+def translate_61_inv(path, n, i, j):
+    res_path = []
+
+    for m in path:
+        if m[0] == "-":
+            res_m = m[:2]
+            m_int = int(m[2:])
+        else:
+            res_m = m[:1]
+            m_int = int(m[1:])
+
+        if m_int == n - 1:
+            res_m = res_m + "5"
+        elif m_int == n - 1 - i:
+            res_m = res_m + "4"
+        elif m_int == n - 1 - j:
+            res_m = res_m + "3"
+        elif m_int == j:
+            res_m = res_m + "2"
+        elif m_int == i:
+            res_m = res_m + "1"
+        elif m_int == 0:
+            res_m = res_m + "0"
+        else:
+            res_m = "XX"
+
+        res_path.append(res_m)
+
+    return res_path
+
 back = {
     "A": "F", "B": "A", "C": "B", "D": "C", "E": "D", "F": "E"
 }
 
 
 if __name__ == "__main__":
+
+    np.random.seed(71)
+
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 283)]
     _q = None
@@ -561,7 +644,7 @@ if __name__ == "__main__":
         _q.solve()
         _id_list.append(_row["id"])
         _moves_list.append(".".join(_q.cube.move_history))
-        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start)
+        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
         assert _q.cube.state == _q.cube.solution_state
     dt_now = datetime.datetime.now()
     pd.DataFrame(

@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from typing import List
+from typing import List, Optional
 from puzzle import Puzzle
 from heapq import heappop, heappush
 from collections import deque
@@ -29,10 +29,13 @@ def transpose_path(path):
     return res_path
 
 
-def solve_greed_62(initial_state: List[str], goal_state: List[str], allow_rot: bool = False):
+def solve_greed_62(
+        initial_state: List[str], goal_state: List[str], allow_rot: bool = False, one_move: bool = False,
+        last_actions: Optional[List[str]] = None
+):
 
     if allow_rot:
-        return solve_greed_62_rot(initial_state, goal_state)
+        return solve_greed_62_rot(initial_state, goal_state, one_move, last_actions)
 
     assert len(initial_state) == 48
     initial_state_arr = np.array(initial_state)
@@ -41,7 +44,17 @@ def solve_greed_62(initial_state: List[str], goal_state: List[str], allow_rot: b
     state_arr = initial_state_arr.copy()
     d_now = (state_arr != goal_state_arr).sum()
 
-    res_path = []
+    if one_move:
+        if last_actions is not None:
+            res_path = last_actions
+        else:
+            res_path = []
+    else:
+        res_path = []
+
+    if d_now == 0 and one_move:
+        return 0, 0, []
+
     while d_now > 0:
         if len(res_path) >= 4:
             rev_seq = []
@@ -53,6 +66,7 @@ def solve_greed_62(initial_state: List[str], goal_state: List[str], allow_rot: b
         else:
             rev_seq = ["", "", "", ""]
         efi_best = 0.0
+        d_new_best = d_now
         best_le_minus = 0
         best_path = []
         best_st = None
@@ -73,6 +87,10 @@ def solve_greed_62(initial_state: List[str], goal_state: List[str], allow_rot: b
                 best_st = new_state_arr.copy()
                 best_path = path_dict[k]
                 best_le_minus = le_minus
+                d_new_best = d_new
+        if one_move:
+            return d_now - d_new_best, best_le_minus, best_path
+
         if best_st is None:
             # print(d_now, best_path)
             # print(state_arr)
@@ -107,7 +125,10 @@ def solve_greed_62(initial_state: List[str], goal_state: List[str], allow_rot: b
     return res_path
 
 
-def solve_greed_62_rot(initial_state: List[str], goal_state: List[str]):
+def solve_greed_62_rot(
+        initial_state: List[str], goal_state: List[str], one_move: bool = False,
+        last_actions: Optional[List[str]] = None
+):
     # 面の回転を許容する
     assert len(initial_state) == 48
     initial_state_arr = np.array(initial_state)
@@ -116,7 +137,18 @@ def solve_greed_62_rot(initial_state: List[str], goal_state: List[str]):
     state_arr = initial_state_arr.copy()
     d_now = (state_arr != goal_state_arr).sum()
 
-    res_path = []
+
+    if one_move:
+        if last_actions is not None:
+            res_path = last_actions
+        else:
+            res_path = []
+    else:
+        res_path = []
+
+    if d_now == 0 and one_move:
+        return 0, 0, []
+
     while d_now > 0:
         if len(res_path) >= 4:
             rev_seq = []
@@ -128,6 +160,7 @@ def solve_greed_62_rot(initial_state: List[str], goal_state: List[str]):
         else:
             rev_seq = ["", "", "", ""]
         efi_best = 0.0
+        d_new_best = d_now
         best_le_minus = 0
         best_path = []
         best_st = None
@@ -148,6 +181,11 @@ def solve_greed_62_rot(initial_state: List[str], goal_state: List[str]):
                 best_st = new_state_arr.copy()
                 best_path = path_dict_rot[k]
                 best_le_minus = le_minus
+                d_new_best = d_new
+
+        if one_move:
+            return d_now - d_new_best, best_le_minus, best_path
+
         if best_st is None:
             # print(d_now, best_path)
             # print(state_arr)

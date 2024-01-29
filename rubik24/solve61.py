@@ -31,6 +31,7 @@ def heuristic(current_state: np.array, goal_state: np.array, two_side: bool = Fa
     # print(current_state, goal_state, h)
     return h * 10
 
+
 def solve_greed_61(initial_state: List[str], goal_state: List[str], two_side: bool = True):
 
     assert len(initial_state) == 24
