@@ -9,8 +9,9 @@ from itertools import permutations
 from subprocess import PIPE
 from rubik24.solve51 import solve_greed_51
 from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
-from magic612.solve61 import solve_greed_61
 from rubik72.solve72 import align_pair_edges_with_center
+from magic612.solve61 import solve_greed_61
+from magic622.solve62 import solve_greed_62
 
 
 os.chdir("../rubiks-cube-NxNxN-solver")
@@ -431,6 +432,32 @@ class RubiksCubeLarge:
             goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
+    def get_subset_48(self, i: int, j: int):
+        n = self.n
+        assert i < j < (n - 1) // 2
+        current_state_sub = []
+        goal_state_sub = []
+        for z in range(6):
+            current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
+
+            current_state_sub.append(self.cube.state[z * n * n + j * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
+            current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+        return current_state_sub, goal_state_sub
+
     def run_subset(self, i: int, j: int):
         n = self.n
         m = (n - 1) // 2
@@ -497,6 +524,47 @@ class RubiksCubeLarge:
                 self.sub_cubes[i].append(sub_cube)
         return None
 
+    def run_subset_2_once(self, i: int, j: int, allow_rot: bool = False):
+        n = self.n
+        m = (n - 1) // 2
+        assert i < j < m
+        current_state_sub, goal_state_sub = self.get_subset_48(i, j)
+        # print(current_state_sub)
+        last4 = translate_61_inv(self.cube.move_history[-4:], n, i, j)
+        gain, le_minus, best_path = solve_greed_62(
+            current_state_sub, goal_state_sub, allow_rot=allow_rot, one_move=True, last_actions=last4
+        )
+        best_path = translate_61(best_path, n, i, j)
+        # print(path)
+        return gain, le_minus, best_path
+
+    def solve_inner_face_greed(self):
+        n = self.n
+        m = (n - 1) // 2
+        efi_best = 1.0
+        while efi_best > 0:
+            efi_best = 0.0
+            g_best = 0
+            le_best = 0
+            path_best = []
+            for i in range(1, m):
+                for j in range(i + 1, m):
+                    g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
+                    efi = g / max(0.1, len(path) - le) - 0.001 * np.random.uniform()
+                    if efi > efi_best:
+                        le_best = le
+                        path_best = path
+                        g_best = g
+                        efi_best = efi
+            # print(g_best, len(path_best) - 2 * le_best)
+            for _ in range(le_best):
+                self.cube.undo()
+                self.count_61 -= 1
+            for mv in path_best[le_best:]:
+                self.cube.operate(mv)
+                self.count_61 += 1
+        return None
+
     def solve_inner_face(self):
         n = self.n
         m = (n - 1) // 2
@@ -504,10 +572,10 @@ class RubiksCubeLarge:
             for j in range(1, m + 1):
                 if i != j:
                     self.run_subset(i, j)
-        for c in range(6):
-            self.print_face(c, 0)
-        print(self.cube.puzzle_id)
-        print(len(self.cube.move_history))
+        # for c in range(6):
+        #     self.print_face(c, 0)
+        # print(self.cube.puzzle_id)
+        # print(len(self.cube.move_history))
         return None
 
     def solve(self):
@@ -517,6 +585,52 @@ class RubiksCubeLarge:
         self.solve_inner_face()
         return None
 
+    def solve_3x3(self):
+        n = self.n
+        k = 3
+        m = (n - 1) // 2
+        pick_list = [0, m, n - 1]
+        current_state_sub = []
+        for z in range(6):
+            for i in pick_list:
+                for j in pick_list:
+                    current_state_sub.append(self.cube.state[z * n * n + i * n + j])
+        # transform
+        nn = k * k
+        res_list = []
+        res_list = res_list + current_state_sub[:nn]
+        res_list = res_list + current_state_sub[2 * nn:3 * nn]
+        res_list = res_list + current_state_sub[nn:2 * nn]
+        res_list = res_list + current_state_sub[5 * nn:]
+        res_list = res_list + current_state_sub[4 * nn:5 * nn]
+        res_list = res_list + current_state_sub[3 * nn:4 * nn]
+
+        solver_input = "".join([v_map[r] for r in res_list])
+        # print(solver_input)
+
+        proc = subprocess.run(
+            f"./rubiks-cube-solver.py --state {solver_input}",
+            shell=True, stdout=PIPE, stderr=PIPE, text=True
+        )
+        # print(proc.stdout)
+        action_list_solver = proc.stdout.split(": ")[1].split()
+        action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
+        for action in action_list_dot.split("."):
+            if action == "":
+                continue
+            # print(action)
+            if action[-1] == "2":
+                action_ = action[:-1] + str(n - 1)
+            elif action[-1] == "1":
+                action_ = action[:-1] + str(m)
+            elif action[-1] == "0":
+                action_ = action[:-1] + str(0)
+            else:
+                action_ = action
+                print(action)
+            self.cube.operate(action_)
+            self.count_solver_5 += 1
+        return None
 
 def translate_51(path, n, k):
     assert k < n - 1 - k
@@ -555,12 +669,44 @@ def translate_61(path, n, i, j):
     return res_path
 
 
+def translate_61_inv(path, n, i, j):
+    res_path = []
+
+    for m in path:
+        if m[0] == "-":
+            res_m = m[:2]
+            m_int = int(m[2:])
+        else:
+            res_m = m[:1]
+            m_int = int(m[1:])
+
+        if m_int == n - 1:
+            res_m = res_m + "5"
+        elif m_int == n - 1 - i:
+            res_m = res_m + "4"
+        elif m_int == n - 1 - j:
+            res_m = res_m + "3"
+        elif m_int == j:
+            res_m = res_m + "2"
+        elif m_int == i:
+            res_m = res_m + "1"
+        elif m_int == 0:
+            res_m = res_m + "0"
+        else:
+            res_m = "XX"
+
+        res_path.append(res_m)
+
+    return res_path
+
+
 back = {
     "A": "F", "B": "A", "C": "B", "D": "C", "E": "D", "F": "E"
 }
 
 
 if __name__ == "__main__":
+    np.random.seed(71)
     puzzles_df = pd.read_csv("../input/puzzles.csv")
     _q = None
     _id_list = []
@@ -587,16 +733,16 @@ if __name__ == "__main__":
         _q.use_solver_4x4(_m)
         for j in range(_m - 1, 1, -1):
             _q.use_solver_fake_5x5_corner(j, final=False)
-        _q.use_solver_fake_5x5_corner(1, final=True)
+        _q.use_solver_fake_5x5_corner(1, final=False)
 
         # print(_row["id"], len(_q.cube.move_history))
-
+        _q.solve_inner_face_greed()
         _q.solve_inner_face()
+        _q.solve_3x3()
         assert _q.cube.state == _q.cube.solution_state
-        print(_row["id"], len(_q.cube.move_history))
         _id_list.append(_row["id"])
         _moves_list.append(".".join(_q.cube.move_history))
-        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start)
+        print(_row["id"], _q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
 
     dt_now = datetime.datetime.now()
     pd.DataFrame(
