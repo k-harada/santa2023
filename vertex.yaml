@@ -1,0 +1,8 @@
+workerPoolSpecs:
+  machineSpec:
+    machineType: e2-highmem-2
+  replicaCount: 1
+  containerSpec:
+    imageUri: us-central1-docker.pkg.dev/kaggle-playground/docker/santa2023-cube
+    # args:
+    #   - solve

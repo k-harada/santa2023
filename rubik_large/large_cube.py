@@ -12,9 +12,6 @@ from magic612.solve61 import solve_greed_61
 from magic622.solve62 import solve_greed_62
 
 
-os.chdir("../rubiks-cube-NxNxN-solver")
-
-
 # for normal colored large cube
 def kociemba_to_kaggle(s, n):
     base_dict = {
@@ -215,10 +212,12 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m5[move] for move in action_list_solver])
@@ -426,10 +425,12 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
@@ -488,7 +489,7 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) + 0.05 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - le) - 0.05 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
@@ -593,11 +594,10 @@ back = {
 }
 
 
-if __name__ == "__main__":
+def solve(seed: int = 71):
+    np.random.seed(seed)
 
-    np.random.seed(71)
-
-    puzzles_df = pd.read_csv("../input/puzzles.csv")
+    puzzles_df = pd.read_csv("input/puzzles.csv")
     puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 283)]
     _q = None
     _id_list = []
@@ -609,8 +609,10 @@ if __name__ == "__main__":
             _n = 10
             continue
         elif _row["id"] < 281:
+            continue
             _n = 19
         else:
+            continue
             _n = 33
         _m = (_n - 1) // 2
         if _row["id"] != 282:
@@ -647,6 +649,10 @@ if __name__ == "__main__":
         print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
         assert _q.cube.state == _q.cube.solution_state
     dt_now = datetime.datetime.now()
-    pd.DataFrame(
-        {"id": _id_list, "moves": _moves_list}
-    ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
+
+    return _id_list, _moves_list
+
+    # import IPython; IPython.embed()
+    # pd.DataFrame(
+    #     {"id": _id_list, "moves": _moves_list}
+    # ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
