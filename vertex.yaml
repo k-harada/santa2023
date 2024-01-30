@@ -1,6 +1,10 @@
 workerPoolSpecs:
   machineSpec:
+    # machineType: e2-standard-4
     machineType: e2-highmem-2
+  diskSpec:
+    bootDiskType: pd-standard
+    bootDiskSizeGb: 1000
   replicaCount: 1
   containerSpec:
     imageUri: us-central1-docker.pkg.dev/kaggle-playground/docker/santa2023-cube

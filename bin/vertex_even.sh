@@ -1,12 +1,16 @@
 #!/bin/bash
 
-for i in {1..9}; do
-    SEED=$i
+# SEED=10
+# gcloud ai custom-jobs create \
+#     --project=kaggle-playground \
+#     --region=us-central1 \
+#     --display-name="cube-even-seed-${SEED}" \
+#     --config=vertex.yaml \
+#     --args="solve-even,--seed,${SEED}"
 
-    gcloud ai custom-jobs create \
+gcloud ai custom-jobs create \
     --project=kaggle-playground \
     --region=us-central1 \
-    --display-name="cube-even-seed-${SEED}" \
+    --display-name="cube-even" \
     --config=vertex.yaml \
-    --args="solve-even,--seed,${SEED}"
-done
+    --args="solve-even"

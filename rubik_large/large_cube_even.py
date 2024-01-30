@@ -12,6 +12,11 @@ from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
 from rubik72.solve72 import align_pair_edges_with_center
 from magic612.solve61 import solve_greed_61
 from magic622.solve62 import solve_greed_62
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 # for normal colored large cube
@@ -217,6 +222,7 @@ class RubiksCubeLarge:
         # print(solver_input)
 
         os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
@@ -270,6 +276,7 @@ class RubiksCubeLarge:
         # print(solver_input)
 
         os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
@@ -553,7 +560,7 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) - 0.001 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
@@ -712,6 +719,7 @@ back = {
 
 def solve(seed: int = 42):
     np.random.seed(seed)
+    logger.info(f"SEED {seed}")
     puzzles_df = pd.read_csv("input/puzzles.csv")
     _q = None
     _id_list = []
