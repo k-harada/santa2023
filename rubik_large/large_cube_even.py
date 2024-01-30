@@ -12,9 +12,11 @@ from rubik24.solve51_diag import solve_greed_51 as solve_greed_51_diag
 from rubik72.solve72 import align_pair_edges_with_center
 from magic612.solve61 import solve_greed_61
 from magic622.solve62 import solve_greed_62
+import logging
 
-
-os.chdir("../rubiks-cube-NxNxN-solver")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 # for normal colored large cube
@@ -219,10 +221,13 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m4[move] for move in action_list_solver])
@@ -270,10 +275,13 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m6[move] for move in action_list_solver])
@@ -373,10 +381,12 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         # success
         if ":" in proc.stdout:
             # print("success")
@@ -550,7 +560,7 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) - 0.001 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
@@ -608,10 +618,12 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
@@ -705,9 +717,10 @@ back = {
 }
 
 
-if __name__ == "__main__":
-    np.random.seed(71)
-    puzzles_df = pd.read_csv("../input/puzzles.csv")
+def solve(seed: int = 42):
+    np.random.seed(seed)
+    logger.info(f"SEED {seed}")
+    puzzles_df = pd.read_csv("input/puzzles.csv")
     _q = None
     _id_list = []
     _moves_list = []
@@ -744,7 +757,9 @@ if __name__ == "__main__":
         _moves_list.append(".".join(_q.cube.move_history))
         print(_row["id"], _q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
 
-    dt_now = datetime.datetime.now()
-    pd.DataFrame(
-        {"id": _id_list, "moves": _moves_list}
-    ).to_csv(f"../output/cube_6_8_10_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
+    return _id_list, _moves_list
+
+    # dt_now = datetime.datetime.now()
+    # pd.DataFrame(
+    #     {"id": _id_list, "moves": _moves_list}
+    # ).to_csv(f"../output/cube_6_8_10_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)

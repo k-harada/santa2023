@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  santa2023:
+    image: us-central1-docker.pkg.dev/kaggle-playground/docker/santa2023-cube
+    # platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile

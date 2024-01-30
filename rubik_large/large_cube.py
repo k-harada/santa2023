@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 import os
@@ -12,7 +13,9 @@ from magic612.solve61 import solve_greed_61
 from magic622.solve62 import solve_greed_62
 
 
-os.chdir("../rubiks-cube-NxNxN-solver")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 # for normal colored large cube
@@ -113,7 +116,7 @@ class RubiksCubeLarge:
     def align_center(self):
         n = self.n
         if n % 2 == 0:
-            print("No Center")
+            logger.info("No Center")
             return None
         k = (n - 1) // 2
         a = (n ** 2 - 1) // 2
@@ -215,10 +218,14 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        print("done")
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m5[move] for move in action_list_solver])
@@ -358,7 +365,7 @@ class RubiksCubeLarge:
         for x in range(i, n - i):
             p = n * n * c + x * n + i
             q = n * n * c + x * n + n - i
-            print(self.cube.state[p:q])
+            logger.info(self.cube.state[p:q])
         return res
 
     def get_sub_cubes(self):
@@ -396,7 +403,7 @@ class RubiksCubeLarge:
         n = self.n
         m = (n - 1) // 2
         for i in range(m - 1, 0, -1):
-            print(f"Solving Edge: {i}")
+            logger.info(f"Solving Edge: {i}")
             if i > 1 or no_last:
                 self.use_solver_5x5_corner(i, final=False)
             else:
@@ -426,10 +433,14 @@ class RubiksCubeLarge:
         solver_input = "".join([v_map[r] for r in res_list])
         # print(solver_input)
 
+        os.chdir("rubiks-cube-NxNxN-solver")
+        print("use solver")
         proc = subprocess.run(
             f"./rubiks-cube-solver.py --state {solver_input}",
             shell=True, stdout=PIPE, stderr=PIPE, text=True
         )
+        print("done")
+        os.chdir("..")
         # print(proc.stdout)
         action_list_solver = proc.stdout.split(": ")[1].split()
         action_list_dot = ".".join([self.m3[move] for move in action_list_solver])
@@ -445,7 +456,7 @@ class RubiksCubeLarge:
                 action_ = action[:-1] + str(0)
             else:
                 action_ = action
-                print(action)
+                logger.info(action)
             self.cube.operate(action_)
             self.count_solver_5 += 1
         return None
@@ -488,7 +499,7 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) + 0.05 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
@@ -505,7 +516,7 @@ class RubiksCubeLarge:
 
     def solve_old(self):
         self.align_center()
-        print(self.cube.move_history)
+        logger.info(self.cube.move_history)
         self.solve_bone()
         self.solve_inner_face()
         self.solve_3x3()
@@ -513,7 +524,7 @@ class RubiksCubeLarge:
 
     def solve(self):
         self.align_center()
-        print(self.cube.move_history)
+        logger.info(self.cube.move_history)
         self.solve_bone()
         self.solve_inner_face_greed()
         self.solve_inner_face()
@@ -593,12 +604,16 @@ back = {
 }
 
 
-if __name__ == "__main__":
+def solve(seed: int = 71, puzzle_id: int = 0):
+    np.random.seed(seed)
 
-    np.random.seed(71)
+    puzzles_df = pd.read_csv("input/puzzles.csv")
 
-    puzzles_df = pd.read_csv("../input/puzzles.csv")
-    puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 283)]
+    if puzzle_id != 0:
+        puzzles_df_pick = puzzles_df[puzzles_df["id"] == puzzle_id]
+    else:
+        puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 281)]
+    import IPython;IPython.embed()
     _q = None
     _id_list = []
     _moves_list = []
@@ -644,9 +659,12 @@ if __name__ == "__main__":
         _q.solve()
         _id_list.append(_row["id"])
         _moves_list.append(".".join(_q.cube.move_history))
-        print(_q.cube.puzzle_id, _q.count_solver_5, _q.count_41, _q.count_61, _q.count_start, len(_q.cube.move_history))
+        logger.info(f"{_q.cube.puzzle_id}, {_q.count_solver_5}, {_q.count_41}, {_q.count_61}, {_q.count_start}, {len(_q.cube.move_history)}")
         assert _q.cube.state == _q.cube.solution_state
-    dt_now = datetime.datetime.now()
-    pd.DataFrame(
-        {"id": _id_list, "moves": _moves_list}
-    ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
+
+    return _id_list, _moves_list
+
+    # dt_now = datetime.datetime.now()
+    # pd.DataFrame(
+    #     {"id": _id_list, "moves": _moves_list}
+    # ).to_csv(f"../output/large-267-282_{dt_now.strftime('%Y-%m-%d-%H:%M')}.csv", index=False)
