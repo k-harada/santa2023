@@ -499,7 +499,7 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - 2 * le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
