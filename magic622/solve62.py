@@ -93,7 +93,7 @@ def solve_greed_62(
                 if mv in rot_face:
                     new_goal_state_arr = new_goal_state_arr[base_perm_dict[mv]]
             d_new = (new_state_arr != new_goal_state_arr).sum()
-            efi = (d_now - d_new) / max(0.1, len(path_add) - le_minus)
+            efi = (d_now - d_new) / max(0.1, len(path_add) - 2 * le_minus)
             if efi > efi_best:
                 efi_best = efi
                 best_st = new_state_arr.copy()
@@ -190,7 +190,7 @@ def solve_greed_62_rot(
                     break
             new_state_arr = state_arr[pe]
             d_new = (new_state_arr != goal_state_arr).sum()
-            efi = (d_now - d_new) / max(0.1, len(path_add) - le_minus)
+            efi = (d_now - d_new) / max(0.1, len(path_add) - 2 * le_minus)
             if efi > efi_best:
                 efi_best = efi
                 best_st = new_state_arr.copy()
