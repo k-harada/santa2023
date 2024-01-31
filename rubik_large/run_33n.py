@@ -78,6 +78,8 @@ if __name__ == "__main__":
         #     "initial_state": [";".join(_q.cube.state)], "num_wildcards": [_row["num_wildcards"]]
         # }).to_csv(f"../output/large-283_step2_problems.csv", index=False)
 
+    assert _q.cube.state[:33] == _q.dummy_cube.state[:33]
+    print(_q.face_rotations)
     _m = (_n - 1) // 2
     _path_list = [[] for _ in range(200)]
     for _i in range(1, _m):
@@ -90,8 +92,57 @@ if __name__ == "__main__":
             # print(_parsed_path)
             for _k, _path in enumerate(_parsed_path):
                 _path_list[_k] = _path_list[_k] + _path
+
+    for _path in _path_list:
+        for _mv in _path:
+            _q.cube.operate(_mv)
+            if _mv in _q.face_rotations:
+                _q.dummy_cube.operate(_mv)
+    # print(_q.cube.state[:100])
+    # print(_q.dummy_cube.state[:100])
+    assert _q.cube.state[:33] == _q.dummy_cube.state[:33]
+
+    _q.solve_inner_face_greed(allow_rot=False)
+    print(len(_q.cube.move_history))
+
+    _id_list = [283]
+    _moves_list = [".".join(_q.cube.move_history)]
+    dt_now = datetime.datetime.now()
+    pd.DataFrame(
+        {"id": _id_list, "moves": _moves_list}
+    ).to_csv(f"../output/large-283_temp_seq_{len(_q.cube.move_history)}.csv", index=False)
+    _q.print_face(0, 0)
+    _q.print_face(1, 0)
+    _q.print_face(2, 0)
+    _q.print_face(3, 0)
+    _q.print_face(4, 0)
+    _q.print_face(5, 0)
+
+
+    # rotate
+    # solve dummy
+    solution_state_dummy = []
+    initial_state_dummy = []
+    for _j, (_x, _y) in enumerate(zip(_q.cube.state, _q.cube.solution_state)):
+        _xi = int(_x[1:])
+        _yi = int(_y[1:])
+        initial_state_dummy.append(c_list[_xi // (_n * _n)])
+        solution_state_dummy.append(c_list[_yi // (_n * _n)])
+    _p = RubiksCubeLarge(
+        puzzle_id=999, size=_n,
+        solution_state=solution_state_dummy,
+        initial_state=initial_state_dummy,
+        num_wildcards=0
+    )
+    _p.solve_3x3()
+    for _mv in _p.cube.move_history:
+        _q.cube.operate(_mv)
+
+    _path_list = [[] for _ in range(200)]
     for _i in range(1, _m):
         for _j in range(_i + 1, _m):
+            if _i == _j or _j == _m:
+                continue
             _path = _q.run_subset_2(_i, _j, only_path=True)
             # print(_path)
             _parsed_path = parse_magic(_path)
@@ -101,6 +152,7 @@ if __name__ == "__main__":
     for _path in _path_list:
         for _mv in _path:
             _q.cube.operate(_mv)
+
     _q.print_face(0, 0)
     _q.print_face(1, 0)
     _q.print_face(2, 0)

@@ -101,6 +101,17 @@ class RubiksCubeLarge:
             initial_state=initial_state,
             num_wildcards=0
         )
+        self.dummy_cube = Puzzle(
+            puzzle_id=puzzle_id, puzzle_type=f"cube_{size}/{size}/{size}",
+            solution_state=solution_state,
+            initial_state=solution_state,
+            num_wildcards=0
+        )
+        face_rotations = ["r0", "f0", "d0", f"r{self.n - 1}", f"f{self.n - 1}", f"d{self.n - 1}"]
+        self.face_rotations = []
+        for mv in face_rotations:
+            self.face_rotations.append(mv)
+            self.face_rotations.append("-" + mv)
         self.m5 = move_translation(5)
         self.m3 = move_translation(3)
         self.count_solver_5 = 0
@@ -254,20 +265,20 @@ class RubiksCubeLarge:
         goal_state_sub = []
         for z in range(6):
             current_state_sub.append(self.cube.state[z * n * n + i * n + j])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + i * n + j])
             if j * 2 == n - 1:
                 current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+                goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - j) * n + i])
                 current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+                goal_state_sub.append(self.dummy_cube.state[z * n * n + j * n + (n - 1 - i)])
             else:
                 current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+                goal_state_sub.append(self.dummy_cube.state[z * n * n + j * n + (n - 1 - i)])
                 current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
-                goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+                goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - j) * n + i])
 
             current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
     def get_subset_48(self, i: int, j: int):
@@ -277,23 +288,23 @@ class RubiksCubeLarge:
         goal_state_sub = []
         for z in range(6):
             current_state_sub.append(self.cube.state[z * n * n + i * n + j])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + j])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + i * n + j])
             current_state_sub.append(self.cube.state[z * n * n + i * n + (n - 1 - j)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + i * n + (n - 1 - j)])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + i * n + (n - 1 - j)])
 
             current_state_sub.append(self.cube.state[z * n * n + j * n + i])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + i])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + j * n + i])
             current_state_sub.append(self.cube.state[z * n * n + j * n + (n - 1 - i)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + j * n + (n - 1 - i)])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + j * n + (n - 1 - i)])
             current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + i])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + i])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - j) * n + i])
             current_state_sub.append(self.cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - j) * n + (n - 1 - i)])
 
             current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + j])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + j])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - i) * n + j])
             current_state_sub.append(self.cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
-            goal_state_sub.append(self.cube.solution_state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
+            goal_state_sub.append(self.dummy_cube.state[z * n * n + (n - 1 - i) * n + (n - 1 - j)])
         return current_state_sub, goal_state_sub
 
     def run_subset(self, i: int, j: int, only_path: bool = False):
@@ -312,6 +323,8 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
                 self.count_41 += 1
+                if m in self.face_rotations:
+                    self.dummy_cube.operate(m)
         elif j == m:
             path = solve_greed_51(current_state_sub, goal_state_sub)
             path = translate_51(path, n, i)
@@ -321,6 +334,8 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
                 self.count_51 += 1
+                if m in self.face_rotations:
+                    self.dummy_cube.operate(m)
         else:
             path = solve_greed_61(current_state_sub, goal_state_sub)
             path = translate_61(path, n, i, j)
@@ -330,6 +345,8 @@ class RubiksCubeLarge:
             for m in path:
                 self.cube.operate(m)
                 self.count_61 += 1
+                if m in self.face_rotations:
+                    self.dummy_cube.operate(m)
 
         # print(self.cube.state)
         return None
@@ -348,6 +365,8 @@ class RubiksCubeLarge:
         for m in path:
             self.cube.operate(m)
             self.count_61 += 1
+            if m in self.face_rotations:
+                self.dummy_cube.operate(m)
 
         # print(self.cube.state)
         return None
@@ -476,7 +495,7 @@ class RubiksCubeLarge:
         # print(path)
         return gain, le_minus, best_path
 
-    def solve_inner_face_greed(self):
+    def solve_inner_face_greed(self, allow_rot: bool = True):
         n = self.n
         m = (n - 1) // 2
         efi_best = 1.0
@@ -487,20 +506,25 @@ class RubiksCubeLarge:
             path_best = []
             for i in range(1, m):
                 for j in range(i + 1, m):
-                    g, le, path = self.run_subset_2_once(i, j, allow_rot=True)
-                    efi = g / max(0.1, len(path) - le) + 0.05 * np.random.uniform()
+                    g, le, path = self.run_subset_2_once(i, j, allow_rot)
+                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
                         g_best = g
                         efi_best = efi
-            # print(g_best, len(path_best) - 2 * le_best)
+            print(g_best, len(path_best) - 2 * le_best)
             for _ in range(le_best):
+                if self.cube.move_history[-1] in self.face_rotations:
+                    self.dummy_cube.undo()
                 self.cube.undo()
                 self.count_61 -= 1
             for mv in path_best[le_best:]:
                 self.cube.operate(mv)
                 self.count_61 += 1
+                if mv in self.face_rotations:
+                    self.dummy_cube.operate(mv)
+            assert self.dummy_cube.state[:33] == self.cube.state[:33]
         return None
 
     def solve_old(self):
