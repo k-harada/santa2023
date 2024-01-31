@@ -613,7 +613,7 @@ def solve(seed: int = 71, puzzle_id: int = 0):
         puzzles_df_pick = puzzles_df[puzzles_df["id"] == puzzle_id]
     else:
         puzzles_df_pick = puzzles_df[(puzzles_df["id"] >= 267) & (puzzles_df["id"] < 281)]
-    import IPython;IPython.embed()
+
     _q = None
     _id_list = []
     _moves_list = []

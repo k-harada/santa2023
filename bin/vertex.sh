@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PUZZLE_ID=0
+PUZZLE_ID=281
 
-for i in {1..20}; do
+for i in {6..10}; do
     SEED="${i}"
     gcloud ai custom-jobs create \
         --project=kaggle-playground \
