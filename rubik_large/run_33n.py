@@ -69,6 +69,8 @@ if __name__ == "__main__":
         print(len(_p.cube.move_history))
         for _m in _p.cube.move_history:
             _q.cube.operate(_m)
+
+        le_step1 = len(_q.cube.move_history)
         # pd.DataFrame(
         #     {"id": [283], "moves": [".".join(_q.cube.move_history)]}
         # ).to_csv(f"../output/large-283_bone.csv", index=False)
@@ -77,7 +79,7 @@ if __name__ == "__main__":
         #     "id": [283], "puzzle_type": ["cube_33/33/33"], "solution_state": [";".join(_q.cube.solution_state)],
         #     "initial_state": [";".join(_q.cube.state)], "num_wildcards": [_row["num_wildcards"]]
         # }).to_csv(f"../output/large-283_step2_problems.csv", index=False)
-
+    """
     assert _q.cube.state[:33] == _q.dummy_cube.state[:33]
     print(_q.face_rotations)
     _m = (_n - 1) // 2
@@ -117,9 +119,38 @@ if __name__ == "__main__":
     _q.print_face(3, 0)
     _q.print_face(4, 0)
     _q.print_face(5, 0)
+    """
+    temp_df = pd.read_csv(f"../output/large-283_temp_seq_{16408}.csv")
+    _path = list(temp_df["moves"].values[0].split("."))
+    for _mv in _path[le_step1:]:
+        _q.cube.operate(_mv)
+        if _mv in _q.face_rotations:
+            _q.dummy_cube.operate(_mv)
 
+    _q.print_face(0, 0)
+    _q.print_face(1, 0)
+    _q.print_face(2, 0)
+    _q.print_face(3, 0)
+    _q.print_face(4, 0)
+    _q.print_face(5, 0)
 
-    # rotate
+    _m = (_n - 1) // 2
+
+    _path_list = [[] for _ in range(200)]
+    for _i in range(1, _m):
+        for _j in range(_i + 1, _m):
+            if _i == _j or _j == _m:
+                continue
+            _path = _q.run_subset_2(_i, _j, only_path=True)
+            # print(_path)
+            _parsed_path = parse_magic(_path)
+            # print(_parsed_path)
+            for _k, _path in enumerate(_parsed_path):
+                _path_list[_k] = _path_list[_k] + _path
+    for _path in _path_list:
+        for _mv in _path:
+            _q.cube.operate(_mv)
+
     # solve dummy
     solution_state_dummy = []
     initial_state_dummy = []
@@ -137,21 +168,7 @@ if __name__ == "__main__":
     _p.solve_3x3()
     for _mv in _p.cube.move_history:
         _q.cube.operate(_mv)
-
-    _path_list = [[] for _ in range(200)]
-    for _i in range(1, _m):
-        for _j in range(_i + 1, _m):
-            if _i == _j or _j == _m:
-                continue
-            _path = _q.run_subset_2(_i, _j, only_path=True)
-            # print(_path)
-            _parsed_path = parse_magic(_path)
-            # print(_parsed_path)
-            for _k, _path in enumerate(_parsed_path):
-                _path_list[_k] = _path_list[_k] + _path
-    for _path in _path_list:
-        for _mv in _path:
-            _q.cube.operate(_mv)
+    print(len(_q.cube.move_history))
 
     _q.print_face(0, 0)
     _q.print_face(1, 0)
@@ -159,7 +176,14 @@ if __name__ == "__main__":
     _q.print_face(3, 0)
     _q.print_face(4, 0)
     _q.print_face(5, 0)
-    print(len(_q.cube.move_history))
+
+    _id_list = [283]
+    _moves_list = [".".join(_q.cube.move_history)]
+    dt_now = datetime.datetime.now()
+    pd.DataFrame(
+        {"id": _id_list, "moves": _moves_list}
+    ).to_csv(f"../output/large-283_almost_done_{len(_q.cube.move_history)}.csv", index=False)
+
     print(_q.cube.puzzle_id, _p.count_solver_5, _q.count_41, _q.count_51, _q.count_61, _p.count_start)
     for _i, (_x, _y) in enumerate(zip(_q.cube.state, _q.cube.solution_state)):
         if _x != _y:
