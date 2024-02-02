@@ -420,6 +420,7 @@ class RubiksCubeLarge:
                 self.use_solver_5x5_corner(i, final=False)
             else:
                 self.use_solver_5x5_corner(i, final=True)
+            print(len(self.cube.move_history))
         return None
 
     def solve_3x3(self):
@@ -507,13 +508,13 @@ class RubiksCubeLarge:
             for i in range(1, m):
                 for j in range(i + 1, m):
                     g, le, path = self.run_subset_2_once(i, j, allow_rot)
-                    efi = g / max(0.1, len(path) - le) - 0.000001 * np.random.uniform()
+                    efi = g / max(0.1, len(path) - 2 * le) - 0.000001 * np.random.uniform()
                     if efi > efi_best:
                         le_best = le
                         path_best = path
                         g_best = g
                         efi_best = efi
-            print(g_best, len(path_best) - 2 * le_best)
+            # print(g_best, len(path_best) - 2 * le_best)
             for _ in range(le_best):
                 if self.cube.move_history[-1] in self.face_rotations:
                     self.dummy_cube.undo()
@@ -524,7 +525,7 @@ class RubiksCubeLarge:
                 self.count_61 += 1
                 if mv in self.face_rotations:
                     self.dummy_cube.operate(mv)
-            assert self.dummy_cube.state[:33] == self.cube.state[:33]
+            assert self.dummy_cube.state[:n] == self.cube.state[:n]
         return None
 
     def solve_old(self):
